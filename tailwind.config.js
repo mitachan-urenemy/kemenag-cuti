@@ -12,8 +12,14 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Poppins', ...defaultTheme.fontFamily.sans],
+                inter: ['Inter', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                'green-primary': '#4d7c0f',
+                'green-secondary': '#84cc16',
+                'green-accent': '#4ade80',
+            }
         },
     },
 

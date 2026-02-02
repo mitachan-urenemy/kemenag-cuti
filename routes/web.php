@@ -3,22 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-Route::get('/login', function () {
-    return view('auth.login');
-});
-
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) return redirect()->route('dashboard');
+    return view('auth.login');
 });
 
 Route::get('/dashboard', function () {
@@ -29,6 +16,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Placeholder routes for navigation
+    Route::get('/surat-cuti', function () {
+        return view('dashboard');
+    })->name('surat-cuti');
+
+    Route::get('/surat-tugas', function () {
+        return view('dashboard');
+    })->name('surat-tugas');
+
+    Route::get('/manajemen-user', function () {
+        return view('dashboard');
+    })->name('manajemen-user');
+
+    Route::get('/pegawai', function () {
+        return view('dashboard');
+    })->name('pegawai');
 });
 
 require __DIR__.'/auth.php';

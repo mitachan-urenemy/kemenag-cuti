@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class ProfileController extends Controller
 {
@@ -26,15 +29,39 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill($request->validated());
+
+        if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
+            if ($user->image_path && Storage::disk('public')->exists($user->image_path)) {
+                Storage::disk('public')->delete($user->image_path);
+            }
+
+            $image = $request->file('image');
+            $filename = uniqid('avatar_', true) . '.' . $image->getClientOriginalExtension();
+            $path = 'avatars/' . $filename;
+
+            // Baca gambar, ubah ukuran, simpan dengan kompresi
+            $img = Image::read($image);
+            $encodedImage = $img
+                    ->orient()
+                    ->cover(300, 300)
+                    ->toJpeg(70);
+
+            Storage::disk('public')->put($path, $encodedImage);
+            $user->image_path = $path;
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('notification', [
+            'type' => 'success',
+            'title' => 'Profil Diperbarui!',
+            'message' => 'Data profil Anda telah berhasil diperbarui.',
+            'autoClose' => true,
+        ]);
     }
 
     /**
@@ -45,6 +72,20 @@ class ProfileController extends Controller
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
+
+        $userCount = User::where('id', '<>', $request->user()->id)->count();
+        if ($userCount <= 0) {
+            return Redirect::route('profile.edit')->with('notification', [
+                'type' => 'danger',
+                'title' => 'Gagal Menghapus Akun!',
+                'message' => 'Tidak boleh menghapus akun terakhir.',
+                'autoClose' => true,
+            ]);
+        }
+
+        if ($request->user()->image_path && Storage::disk('public')->exists($request->user()->image_path)) {
+            Storage::disk('public')->delete($request->user()->image_path);
+        }
 
         $user = $request->user();
 

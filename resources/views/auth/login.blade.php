@@ -1,46 +1,41 @@
-@extends('layouts.auth')
-
-@section('title','Login Admin')
-
-@section('content')
-    <h3>Login Admin</h3>
-
-    {{-- ERROR MESSAGE --}}
-    @if ($errors->any())
-        <div style="background:#fee2e2;color:#991b1b;padding:8px;border-radius:4px;font-size:12px;margin-bottom:10px">
-            {{ $errors->first() }}
-        </div>
-    @endif
+<x-guest-layout>
+    <!-- Session Status -->
+    <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <div class="form-group">
-            <label>Username</label>
-            <input
-                type="email"
-                name="email"
-                placeholder="Masukkan username"
-                required
-            >
+        <!-- Username -->
+        <div>
+            <x-input-label for="username" :value="__('Username')" />
+            <x-text-input id="username" class="block mt-1 w-full" type="text" name="username" :value="old('username')" required autofocus autocomplete="username" />
+            <x-input-error :messages="$errors->get('username')" class="mt-2" />
         </div>
 
-        <div class="form-group">
-            <label>Password</label>
-            <input
-                type="password"
-                name="password"
-                placeholder="Masukkan password"
-                required
-            >
+        <!-- Password -->
+        <div class="mt-4">
+            <x-input-label for="password" :value="__('Password')" />
+
+            <x-text-input id="password" class="block mt-1 w-full"
+                            type="password"
+                            name="password"
+                            required autocomplete="current-password" />
+
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <button type="submit">Masuk</button>
+        <!-- Remember Me -->
+        <div class="block mt-4">
+            <label for="remember_me" class="inline-flex items-center">
+                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
+                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+            </label>
+        </div>
 
-        <div class="demo">
-            Demo Login:<br>
-            Username: admin@kemenag.go.id<br>
-            Password: admin123
+        <div class="flex items-center justify-end mt-4">
+            <x-primary-button class="ms-3">
+                {{ __('Log in') }}
+            </x-primary-button>
         </div>
     </form>
-@endsection
+</x-guest-layout>

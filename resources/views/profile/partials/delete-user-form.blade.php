@@ -9,47 +9,103 @@
         </p>
     </header>
 
-    <x-danger-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Delete Account') }}</x-danger-button>
+    <div x-data="{ show: {{ $errors->userDeletion->isNotEmpty() ? 'true' : 'false' }} }">
+        <x-danger-button @click.prevent="show = true">
+            {{ __('Delete Account') }}
+        </x-danger-button>
 
-    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
-            @csrf
-            @method('delete')
+        <div
+            x-show="show"
+            x-on:keydown.escape.window="show = false"
+            style="display: none;"
+            class="fixed inset-0 z-[99] flex items-center justify-center p-4"
+            x-cloak
+        >
+            <!-- Overlay -->
+            <div
+                x-show="show"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                @click="show = false"
+                class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm"
+            ></div>
 
-            <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Are you sure you want to delete your account?') }}
-            </h2>
+            <!-- Modal Panel -->
+            <div
+                x-show="show"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-90"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-90"
+                @click.stop
+                class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+            >
+                <form method="post" action="{{ route('profile.destroy') }}">
+                    @csrf
+                    @method('delete')
 
-            <p class="mt-1 text-sm text-gray-600">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
-            </p>
+                    <!-- Decorative top border -->
+                    <div class="h-1.5 bg-gradient-to-r from-red-500 via-rose-500 to-pink-500"></div>
 
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+                    <div class="p-6">
+                        <div class="flex items-start gap-4">
+                            <!-- Icon -->
+                            <div class="flex-shrink-0">
+                                <div class="relative">
+                                    <div class="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-25"></div>
+                                    <div class="relative w-14 h-14 flex items-center justify-center bg-gradient-to-br from-red-100 to-rose-100 rounded-full shadow-lg">
+                                        <x-lucide-shield-alert class="w-7 h-7 text-red-600" />
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Title and Message -->
+                            <div class="flex-1 pt-1">
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">{{ __('Anda Yakin?') }}</h3>
+                                <p class="text-base text-gray-600 leading-relaxed">{{ __('Anda tidak dapat mengembalikan akun ini setelah dihapus.') }}</p>
+                            </div>
+                            <button type="button" @click="show = false" class="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+                                <x-lucide-x class="w-5 h-5" />
+                            </button>
+                        </div>
 
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
+                        <!-- Password Input -->
+                        <div class="mt-6">
+                            <x-input-label for="current_password" value="{{ __('Password') }}" class="sr-only" />
+                            <x-text-input
+                                id="current_password"
+                                name="password"
+                                type="password"
+                                class="mt-1 block w-full"
+                                placeholder="{{ __('Password') }}"
+                                required
+                            />
+                            <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+                        </div>
+                    </div>
 
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+                    <!-- Action Buttons -->
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                        <div class="flex justify-end gap-3">
+                            <button
+                                type="button"
+                                @click="show = false"
+                                class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl transition-all duration-200 hover:shadow-md active:scale-95"
+                            >
+                                Batal
+                            </button>
+                            <x-danger-button type="submit" class="ms-3">
+                                {{ __('Hapus Akun') }}
+                            </x-danger-button>
+                        </div>
+                    </div>
+                </form>
             </div>
-
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Cancel') }}
-                </x-secondary-button>
-
-                <x-danger-button class="ms-3">
-                    {{ __('Delete Account') }}
-                </x-danger-button>
-            </div>
-        </form>
-    </x-modal>
+        </div>
+    </div>
 </section>

@@ -24,6 +24,11 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return back()->with('status', 'password-updated');
+        return back()->with('notification', [
+            'type' => 'success',
+            'title' => 'Password Diperbarui!',
+            'message' => 'Password Anda telah berhasil diganti.',
+            'autoClose' => true,
+        ]);
     }
 }
