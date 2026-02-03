@@ -1,17 +1,11 @@
-<section class="space-y-6">
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Delete Account') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
-        </p>
-    </header>
-
+<x-content-card
+    icon="trash-2"
+    title="{{ __('Hapus Akun') }}"
+    subtitle="{{ __('Setelah akun Anda dihapus, seluruh data dan sumber daya yang terkait akan dihapus secara permanen. Sebelum menghapus akun, harap unduh terlebih dahulu data atau informasi apa pun yang ingin Anda simpan.') }}"
+>
     <div x-data="{ show: {{ $errors->userDeletion->isNotEmpty() ? 'true' : 'false' }} }">
         <x-danger-button @click.prevent="show = true">
-            {{ __('Delete Account') }}
+            {{ __('Hapus Akun') }}
         </x-danger-button>
 
         <div
@@ -53,7 +47,7 @@
                     <!-- Decorative top border -->
                     <div class="h-1.5 bg-gradient-to-r from-red-500 via-rose-500 to-pink-500"></div>
 
-                    <div class="p-6">
+                    <div class="p-6 space-y-6">
                         <div class="flex items-start gap-4">
                             <!-- Icon -->
                             <div class="flex-shrink-0">
@@ -76,12 +70,11 @@
 
                         <!-- Password Input -->
                         <div class="mt-6">
-                            <x-input-label for="current_password" value="{{ __('Password') }}" class="sr-only" />
-                            <x-text-input
-                                id="current_password"
+                            <x-forms.password
+                                :srOnlyTitle="true"
+                                title="{{ __('Password') }}"
+                                id="password_delete"
                                 name="password"
-                                type="password"
-                                class="mt-1 block w-full"
                                 placeholder="{{ __('Password') }}"
                                 required
                             />
@@ -108,4 +101,4 @@
             </div>
         </div>
     </div>
-</section>
+</x-content-card>

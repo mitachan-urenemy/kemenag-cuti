@@ -1,7 +1,43 @@
 <x-app-layout>
-    <div class="bg-white p-8 rounded-xl shadow-md">
-        <h2 class="text-2xl font-semibold text-gray-700">Konten halaman belum tersedia</h2>
-        <p class="text-gray-500 mt-2">Halaman ini sedang dalam pengembangan.</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="col-span-1 md:col-span-2 lg:col-span-3">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-4 md:p-6 border-b border-gray-200 bg-gray-50">
+                    <div class="flex items-center gap-2 mb-3">
+                        <x-lucide-house class="w-8 h-8 text-gray-600" />
+                        <h2 class="text-lg font-semibold text-gray-800">Dashboard</h2>
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        Selamat datang di dashboard Kemenag Bener Meriah!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Card 1: Manajemen Pegawai --}}
+        <x-card
+            icon="users"
+            title="Manajemen Pegawai"
+            description="Kelola data, tambah, ubah, dan hapus pegawai."
+            href="{{ route('pegawai.index') }}"
+        />
+
+        {{-- Card 2: Manajemen User --}}
+        <x-card
+            icon="user-cog"
+            title="Manajemen User"
+            description="Atur pengguna yang dapat mengakses sistem."
+            href="{{ route('users.index') }}"
+        />
+
+        {{-- Card 3: Manajemen Surat (Placeholder) --}}
+        <x-card
+            icon="mail"
+            title="Manajemen Surat"
+            description="Buat, lihat, dan arsipkan surat cuti dan surat tugas."
+            href="#"
+        />
+
     </div>
 </x-app-layout>
 

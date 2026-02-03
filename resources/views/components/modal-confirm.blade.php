@@ -4,6 +4,7 @@
     'action' => '',
     'method' => 'POST'
 ])
+
 <div
     x-data="{
         show: false,
@@ -22,91 +23,76 @@
     x-show="show"
     x-on:keydown.escape.window="show = false"
     style="display: none;"
-    class="fixed inset-0 z-[99] flex items-center justify-center p-4"
+    class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
     x-cloak
 >
-    <!-- Overlay dengan blur -->
+    {{-- Backdrop / Overlay --}}
     <div
         x-show="show"
-        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave="ease-in duration-200"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         @click="show = false"
-        class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm"
+        class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+        aria-hidden="true"
     ></div>
 
-    <!-- Modal dengan animasi scale dan bounce -->
+    {{-- Modal Content --}}
     <div
         x-show="show"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 scale-90"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-90"
+        x-transition:enter="ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95 translate-y-4 sm:translate-y-0 sm:scale-95"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0 sm:scale-100"
+        x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100 translate-y-0 sm:scale-100"
+        x-transition:leave-end="opacity-0 scale-95 translate-y-4 sm:translate-y-0 sm:scale-95"
         @click.stop
-        class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+        class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all"
+        role="dialog"
+        aria-modal="true"
     >
-        <!-- Decorative top border -->
-        <div class="h-1.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500"></div>
+        <div class="p-6 sm:p-8 text-center">
+            {{-- Icon Container --}}
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 ring-8 ring-red-50 mb-4">
+                <x-lucide-alert-triangle class="h-8 w-8 text-red-600" stroke-width="2" />
+            </div>
 
-        <div class="p-6">
-            <div class="flex items-start gap-4">
-                <!-- Animated Icon -->
-                <div class="flex-shrink-0">
-                    <div class="relative">
-                        <!-- Pulse background -->
-                        <div class="absolute inset-0 bg-yellow-400 rounded-full animate-ping opacity-25"></div>
-                        <!-- Icon container -->
-                        <div class="relative w-14 h-14 flex items-center justify-center bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full shadow-lg">
-                            <x-lucide-alert-triangle class="w-7 h-7 text-yellow-600" />
-                        </div>
-                    </div>
-                </div>
+            {{-- Text Content --}}
+            <h3 class="text-xl font-bold text-gray-900" x-text="title"></h3>
 
-                <div class="flex-1 pt-1">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2" x-text="title"></h3>
-                    <p class="text-lg text-gray-600 leading-relaxed" x-html="message"></p>
-                </div>
-
-                <button
-                    @click="show = false"
-                    class="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
-                >
-                    <x-lucide-x class="w-5 h-5" />
-                </button>
+            <div class="mt-2">
+                <p class="text-sm text-gray-500 leading-relaxed" x-html="message"></p>
             </div>
         </div>
 
-        <!-- Action buttons dengan gradient -->
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-            <div class="flex justify-end gap-3">
+        {{-- Action Buttons --}}
+        <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse sm:px-8 gap-3">
+
+            {{-- Button Confirm (Primary/Danger) --}}
+            <form :action="action" method="POST" class="w-full sm:w-auto">
+                @csrf
+                <template x-if="['PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())">
+                    <input type="hidden" name="_method" :value="method">
+                </template>
                 <button
-                    type="button"
-                    @click="show = false"
-                    class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95"
+                    type="submit"
+                    class="inline-flex w-full justify-center items-center rounded-lg border border-transparent bg-red-600 px-4 py-2.5 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:text-sm transition-colors sm:mt-4"
                 >
-                    Batal
+                    Ya, Hapus / Lanjutkan
                 </button>
-                <form :action="action" method="POST" class="inline-flex">
-                    @csrf
-                    <template x-if="['PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())">
-                        <input type="hidden" name="_method" :value="method">
-                    </template>
-                    <button
-                        type="submit"
-                        class="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl transition-all duration-200 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 hover:scale-105 active:scale-95"
-                    >
-                        <span class="flex items-center gap-2">
-                            <x-lucide-check class="w-4 h-4" />
-                            Konfirmasi
-                        </span>
-                    </button>
-                </form>
-            </div>
+            </form>
+
+            {{-- Button Cancel (Secondary) --}}
+            <button
+                type="button"
+                @click="show = false"
+                class="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm transition-colors"
+            >
+                Batal
+            </button>
         </div>
     </div>
 </div>

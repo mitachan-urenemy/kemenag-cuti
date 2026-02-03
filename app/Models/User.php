@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -54,5 +55,13 @@ class User extends Authenticatable
     public function pegawai(): BelongsTo
     {
         return $this->belongsTo(Pegawai::class);
+    }
+
+    /**
+     * Get the surats created by the User.
+     */
+    public function surats(): HasMany
+    {
+        return $this->hasMany(Surat::class, 'created_by_user_id');
     }
 }

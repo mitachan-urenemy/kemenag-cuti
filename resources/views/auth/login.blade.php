@@ -1,41 +1,62 @@
 <x-guest-layout>
+    <div class="flex flex-col items-center justify-center mb-6">
+        <a href="/" class="transition-transform hover:scale-105">
+            <img src="{{ asset('images/logo-kemenag.webp') }}" alt="Kemenag Logo" class="w-24 h-24 drop-shadow-md">
+        </a>
+        <h2 class="mt-4 text-2xl font-bold text-gray-800">Selamat Datang</h2>
+        <p class="mt-1 text-sm text-gray-600">Silakan login untuk melanjutkan</p>
+    </div>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
         <!-- Username -->
-        <div>
-            <x-input-label for="username" :value="__('Username')" />
-            <x-text-input id="username" class="block mt-1 w-full" type="text" name="username" :value="old('username')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('username')" class="mt-2" />
-        </div>
+        <x-forms.text
+            title="{{ __('Username') }}"
+            name="username"
+            type="text"
+            :value="old('username')"
+            required
+            autofocus
+            autocomplete="username"
+        />
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <x-forms.password
+            title="{{ __('Password') }}"
+            name="password"
+            required
+            autocomplete="current-password"
+        />
 
         <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
+        <div class="flex items-center justify-between">
+            <x-forms.checkbox
+                title="{{ __('Ingat saya') }}"
+                name="remember"
+                :checked="old('remember')"
+            />
+
+            @if (Route::has('password.request'))
+                <a href="{{ route('password.request') }}" class="text-sm text-green-600 hover:text-green-700 hover:underline transition">
+                    {{ __('Lupa password?') }}
+                </a>
+            @endif
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button class="ms-3">
+        <div class="pt-2">
+            <x-primary-button class="w-full justify-center py-3 text-base font-semibold">
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
     </form>
+
+    <div class="mt-6 text-center border-t border-gray-300 pt-4">
+        <p class="text-xs text-gray-500">
+            © {{ date('Y') }} Kementerian Agama. All rights reserved.
+        </p>
+    </div>
 </x-guest-layout>

@@ -11,22 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Master table for employee data, serves as the single source of truth.
         Schema::create('pegawais', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
-            $table->string('nip')->nullable()->unique();
-            $table->string('image_path')->nullable();
+            $table->string('nama_lengkap');
+            $table->string('nip', 25)->unique()->nullable();
+            $table->string('pangkat_golongan')->nullable();
             $table->string('jabatan');
-            $table->string('unit_kerja')->nullable();
-            $table->string('pangkat_golonganruang')->nullable();
-            $table->boolean('kepala')->default(false);
+            $table->string('bidang_seksi')->nullable();
+            $table->string('image_path')->nullable();
+            $table->boolean('is_kepala')->default(false)->comment('True if this employee is a department head or official');
             $table->timestamps();
         });
 
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('pegawai_id')->nullable();
-            $table->foreign('pegawai_id')->references('id')->on('pegawais')->onDelete('set null');
+            $table->foreignId('pegawai_id')->nullable()->constrained('pegawais')->onDelete('set null');
             $table->string('username')->unique();
             $table->string('email')->unique()->nullable();
             $table->string('image_path')->nullable();
@@ -56,9 +56,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pegawais');
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('pegawais');
     }
 };

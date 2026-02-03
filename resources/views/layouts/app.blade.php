@@ -4,7 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/webp" href="{{ asset('images/logo-kemenag.webp') }}">
+    <link rel="shortcut icon" href="{{ asset('images/logo-kemenag.webp') }}">
     <title>{{ config('app.name', 'Laravel') }}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -101,7 +105,7 @@
                             <!-- User Info in Dropdown -->
                             <div class="px-4 py-3">
                                 <p class="text-sm font-medium text-gray-900">{{ Auth::user()->username ?? 'Admin' }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email ?? 'admin@example.com' }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email ?? '-' }}</p>
                             </div>
 
                             <!-- Menu Items -->
@@ -110,12 +114,6 @@
                                    class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-green-primary transition-colors {{ request()->routeIs('profile.edit') ? 'bg-indigo-50 text-green-primary' : '' }}">
                                     <x-lucide-user class="mr-3 h-5 w-5" />
                                     Profil Saya
-                                </a>
-
-                                <a href="#"
-                                   class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-green-primary transition-colors">
-                                    <x-lucide-settings class="mr-3 h-5 w-5" />
-                                    Pengaturan
                                 </a>
                             </div>
 
@@ -155,11 +153,13 @@
                         type: '{{ session('notification.type') }}',
                         title: '{{ session('notification.title') }}',
                         message: '{{ session('notification.message') }}',
-                        autoClose: {{ data_get(session('notification'), 'autoClose', true) ? 'true' : 'false' }}
+                        autoClose: {{ data_get(session('notification'), 'autoClose', true) ? 'true' : 'false' }},
+                        duration: {{ data_get(session('notification'), 'duration', 5000) }}
                     }
                 }));
             });
         </script>
     @endif
+    @stack('scripts')
 </body>
 </html>

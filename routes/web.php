@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,13 +28,12 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('surat-tugas');
 
-    Route::get('/manajemen-user', function () {
+    Route::get('/riwayat-surat', function () {
         return view('dashboard');
-    })->name('manajemen-user');
+    })->name('riwayat-surat');
 
-    Route::get('/pegawai', function () {
-        return view('dashboard');
-    })->name('pegawai');
+    Route::resource('pegawai', PegawaiController::class);
+    Route::resource('users', UserController::class);
 });
 
 require __DIR__.'/auth.php';

@@ -2,24 +2,33 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pegawai extends Model
 {
+    use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'nama',
+        'nama_lengkap',
         'nip',
-        'image_path',
+        'pangkat_golongan',
         'jabatan',
-        'unit_kerja',
-        'pangkat_golonganruang',
-        'kepala',
+        'bidang_seksi',
+        'image_path',
+        'is_kepala',
     ];
 
     /**
-     * Get the user associated with the Pegawai.
+     * Get the user account associated with the Pegawai.
      */
     public function user(): HasOne
     {
@@ -27,34 +36,20 @@ class Pegawai extends Model
     }
 
     /**
-     * Get the surats for the Pegawai.
+     * The surats that belong to the Pegawai.
+     * (Surat Cuti / Surat Tugas yang ditujukan untuk pegawai ini)
      */
-    public function surats(): HasMany
+    public function surats(): BelongsToMany
     {
-        return $this->hasMany(Surat::class);
+        return $this->belongsToMany(Surat::class, 'pegawai_surat');
     }
 
     /**
-     * Get the cuti requests made by this Pegawai.
+     * Get the surats signed by this Pegawai.
+     * (Surat yang ditandatangani oleh pegawai ini)
      */
-    public function cutis(): HasMany
+    public function suratsAsPenandatangan(): HasMany
     {
-        return $this->hasMany(Cuti::class);
-    }
-
-    /**
-     * Get the cuti requests where this Pegawai is the atasan.
-     */
-    public function cutisAsAtasan(): HasMany
-    {
-        return $this->hasMany(Cuti::class, 'atasan_id');
-    }
-
-    /**
-     * Get the cuti requests where this Pegawai is the pejabat.
-     */
-    public function cutisAsPejabat(): HasMany
-    {
-        return $this->hasMany(Cuti::class, 'pejabat_id');
+        return $this->hasMany(Surat::class, 'penandatangan_id');
     }
 }
