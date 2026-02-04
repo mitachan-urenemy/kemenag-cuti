@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('pangkat_golongan')->nullable();
             $table->string('jabatan');
             $table->string('bidang_seksi')->nullable();
-            $table->string('image_path')->nullable();
             $table->boolean('is_kepala')->default(false)->comment('True if this employee is a department head or official');
             $table->timestamps();
         });

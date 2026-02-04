@@ -59,22 +59,12 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
         ]);
 
-        // --- 3. Buat Data Kop Surat ---
-        $kopSurat = KopSurat::create([
-            'title' => 'KEMENTERIAN AGAMA REPUBLIK INDONESIA',
-            'type' => 'KANTOR KEMENTERIAN AGAMA KABUPATEN CONTOH',
-            'description' => 'Jl. Pahlawan No. 123, Kota Contoh, Provinsi Kode Pos 12345',
-            'alamat_kop' => 'Telp. (021) 1234567, Email: kabcontoh@kemenag.go.id',
-            'image_path' => null,
-        ]);
-
         // --- 4. Buat Contoh Surat Cuti ---
         $suratCuti = Surat::create([
             'nomor_surat' => 'B-001/Kk.13/KP.01.1/02/2026',
             'jenis_surat' => 'cuti',
             'tanggal_surat' => '2026-02-05',
             'perihal' => 'Pemberian Cuti Tahunan',
-            'kop_surat_id' => $kopSurat->id,
             'penandatangan_id' => $kepala->id,
             'created_by_user_id' => $adminUser->id,
             // Kolom khusus cuti
@@ -92,7 +82,6 @@ class DatabaseSeeder extends Seeder
             'jenis_surat' => 'tugas',
             'tanggal_surat' => '2026-02-20',
             'perihal' => 'Perintah Tugas',
-            'kop_surat_id' => $kopSurat->id,
             'penandatangan_id' => $kepala->id,
             'created_by_user_id' => $adminUser->id,
             // Kolom khusus tugas

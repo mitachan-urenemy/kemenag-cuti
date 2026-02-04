@@ -22,7 +22,6 @@ class Surat extends Model
         'jenis_surat',
         'tanggal_surat',
         'perihal',
-        'kop_surat_id',
         'penandatangan_id',
         'created_by_user_id',
         'file_path',
@@ -64,14 +63,6 @@ class Surat extends Model
     }
 
     /**
-     * Get the kop_surat that owns the Surat.
-     */
-    public function kopSurat(): BelongsTo
-    {
-        return $this->belongsTo(KopSurat::class, 'kop_surat_id');
-    }
-
-    /**
      * Get the penandatangan (signer) of the Surat.
      */
     public function penandatangan(): BelongsTo
@@ -85,5 +76,38 @@ class Surat extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Calculate the duration of cuti and remaining cuti.
+     * (Durasi cuti dan sisa cuti)
+     */
+    public function hitungCuti($tanggalMulai, $tanggalSelesai)
+    {
+        $mulai = Carbon::parse($tanggalMulai);
+        $selesai = Carbon::parse($tanggalSelesai);
+        $hariIni = Carbon::today();
+
+        if ($selesai->lt($mulai)) {
+            throw new \InvalidArgumentException('Tanggal selesai tidak boleh lebih kecil dari tanggal mulai');
+        }
+
+        // total durasi cuti (inklusif)
+        $durasi = $mulai->diffInDays($selesai) + 1;
+
+        // sisa cuti dari hari ini sampai tanggal selesai
+        $sisa = $hariIni->gt($selesai)
+            ? 0
+            : $hariIni->diffInDays($selesai) + 1;
+
+        return [
+            'durasi' => $durasi,
+            'sisa_cuti' => $sisa,
+            'status' => match (true) {
+                $hariIni->lt($mulai) => 'BELUM_DIMULAI',
+                $hariIni->between($mulai, $selesai) => 'SEDANG_CUTI',
+                default => 'SELESAI',
+            },
+        ];
     }
 }

@@ -30,14 +30,21 @@
             href="{{ route('users.index') }}"
         />
 
-        {{-- Card 3: Manajemen Surat (Placeholder) --}}
+        {{-- Card 3: Buat Surat Cuti --}}
         <x-card
-            icon="mail"
-            title="Manajemen Surat"
-            description="Buat, lihat, dan arsipkan surat cuti dan surat tugas."
-            href="#"
+            icon="file-text"
+            title="Buat Surat Cuti"
+            description="Buat dan arsipkan surat izin cuti untuk pegawai."
+            href="{{ route('surat-cuti.create') }}"
         />
 
+        {{-- Card 4: Buat Surat Tugas --}}
+        <x-card
+            icon="briefcase"
+            title="Buat Surat Tugas"
+            description="Buat dan arsipkan surat perintah tugas untuk pegawai."
+            href="{{ route('surat-tugas.create') }}"
+        />
     </div>
 </x-app-layout>
 

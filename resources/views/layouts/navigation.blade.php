@@ -103,27 +103,27 @@
         </a>
 
         <!-- Surat Cuti -->
-        <a href="{{ route('surat-cuti') }}"
+        <a href="{{ route('surat-cuti.index') }}"
            class="group flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                  {{ request()->routeIs('surat-cuti')
+                  {{ request()->routeIs('surat-cuti.*')
                      ? 'bg-white text-green-primary shadow-lg'
                      : 'text-white hover:bg-white/10 hover:translate-x-1' }}">
-            <x-lucide-file-text class="h-5 w-5 flex-shrink-0 {{ request()->routeIs('surat-cuti') ? 'text-green-primary' : 'text-white/80' }}" />
+            <x-lucide-file-text class="h-5 w-5 flex-shrink-0 {{ request()->routeIs('surat-cuti.*') ? 'text-green-primary' : 'text-white/80' }}" />
             <span class="ml-3">Surat Cuti</span>
-            @if(request()->routeIs('surat-cuti'))
+            @if(request()->routeIs('surat-cuti.*'))
                 <x-lucide-chevron-right class="w-4 h-4 ml-auto text-green-primary" />
             @endif
         </a>
 
         <!-- Surat Tugas -->
-        <a href="{{ route('surat-tugas') }}"
+        <a href="{{ route('surat-tugas.index') }}"
            class="group flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                  {{ request()->routeIs('surat-tugas')
+                  {{ request()->routeIs('surat-tugas.*')
                      ? 'bg-white text-green-primary shadow-lg'
                      : 'text-white hover:bg-white/10 hover:translate-x-1' }}">
-            <x-lucide-briefcase class="h-5 w-5 flex-shrink-0 {{ request()->routeIs('surat-tugas') ? 'text-green-primary' : 'text-white/80' }}" />
+            <x-lucide-briefcase class="h-5 w-5 flex-shrink-0 {{ request()->routeIs('surat-tugas.*') ? 'text-green-primary' : 'text-white/80' }}" />
             <span class="ml-3">Surat Tugas</span>
-            @if(request()->routeIs('surat-tugas'))
+            @if(request()->routeIs('surat-tugas.*'))
                 <x-lucide-chevron-right class="w-4 h-4 ml-auto text-green-primary" />
             @endif
         </a>

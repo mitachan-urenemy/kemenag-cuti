@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Carbon\Carbon;
 
 class Pegawai extends Model
 {
@@ -23,7 +24,6 @@ class Pegawai extends Model
         'pangkat_golongan',
         'jabatan',
         'bidang_seksi',
-        'image_path',
         'is_kepala',
     ];
 
@@ -51,5 +51,38 @@ class Pegawai extends Model
     public function suratsAsPenandatangan(): HasMany
     {
         return $this->hasMany(Surat::class, 'penandatangan_id');
+    }
+
+    /**
+     * Calculate the duration of cuti and remaining cuti.
+     * (Durasi cuti dan sisa cuti)
+     */
+    public function hitungCuti($tanggalMulai, $tanggalSelesai)
+    {
+        $mulai = Carbon::parse($tanggalMulai);
+        $selesai = Carbon::parse($tanggalSelesai);
+        $hariIni = Carbon::today();
+
+        if ($selesai->lt($mulai)) {
+            throw new \InvalidArgumentException('Tanggal selesai tidak boleh lebih kecil dari tanggal mulai');
+        }
+
+        // total durasi cuti (inklusif)
+        $durasi = $mulai->diffInDays($selesai) + 1;
+
+        // sisa cuti dari hari ini sampai tanggal selesai
+        $sisa = $hariIni->gt($selesai)
+            ? 0
+            : $hariIni->diffInDays($selesai) + 1;
+
+        return [
+            'durasi' => $durasi,
+            'sisa_cuti' => $sisa,
+            'status' => match (true) {
+                $hariIni->lt($mulai) => 'BELUM_DIMULAI',
+                $hariIni->between($mulai, $selesai) => 'SEDANG_CUTI',
+                default => 'SELESAI',
+            },
+        ];
     }
 }

@@ -19,14 +19,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Placeholder routes for navigation
-    Route::get('/surat-cuti', function () {
-        return view('dashboard');
-    })->name('surat-cuti');
+    Route::resource('surat-cuti', \App\Http\Controllers\SuratCutiController::class);
+    Route::get('/surat-cuti/{surat}/download', [\App\Http\Controllers\SuratCutiController::class, 'download'])->name('surat-cuti.download');
 
-    Route::get('/surat-tugas', function () {
-        return view('dashboard');
-    })->name('surat-tugas');
+    Route::resource('surat-tugas', \App\Http\Controllers\SuratTugasController::class);
+    Route::get('/surat-tugas/{surat}/download', [\App\Http\Controllers\SuratTugasController::class, 'download'])->name('surat-tugas.download');
 
     Route::get('/riwayat-surat', function () {
         return view('dashboard');

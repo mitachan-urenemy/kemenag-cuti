@@ -11,18 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tabel untuk kop surat, struktur dipertahankan
-        Schema::create('kop_surats', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->string('type');
-            $table->string('description');
-            $table->string('alamat_kop');
-            $table->string('image_path')->nullable();
-            $table->string('image_path2')->nullable();
-            $table->timestamps();
-        });
-
         // Tabel utama untuk semua jenis surat (Cuti dan Tugas)
         Schema::create('surats', function (Blueprint $table) {
             $table->id();
@@ -32,7 +20,6 @@ return new class extends Migration
             $table->string('perihal');
 
             // Foreign Keys
-            $table->foreignId('kop_surat_id')->constrained('kop_surats')->onDelete('cascade');
             $table->foreignId('penandatangan_id')->nullable()->constrained('pegawais')->onDelete('set null');
             $table->foreignId('created_by_user_id')->constrained('users')->onDelete('cascade');
 
