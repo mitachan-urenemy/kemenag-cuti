@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Izin Cuti tahunan</title>
+    <title>Surat Izin Cuti Tahunan</title>
     <style>
         @page {
             size: A4;
@@ -16,7 +16,6 @@
             line-height: 1.5;
             color: #000;
             margin: 0;
-            padding: 10px;
         }
 
         .container {
@@ -150,28 +149,11 @@
         }
 
         @media print {
-            /* Hide everything except printable area */
-            body * {
-                visibility: hidden;
+            body {
+                padding: 0;
             }
-            .printable-area,
-            .printable-area * {
-                visibility: visible;
-            }
-            .printable-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 0 !important;
-                margin: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
-                border-radius: 0 !important;
-            }
-            /* Remove background colors for printing */
-            .printable-area {
-                background: white !important;
+            .container {
+                max-width: 100%;
             }
         }
     </style>

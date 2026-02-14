@@ -7,8 +7,8 @@
             :padding="false"
         >
             <x-slot name="action">
-                <a href="{{ route('pegawai.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:border-indigo-800 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
-                    <x-lucide-plus class="w-4 h-4" />
+                <a href="{{ route('pegawai.create') }}" class="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all cursor-pointer flex items-center gap-2">
+                    <x-lucide-user-plus class="w-4 h-4" />
                     Tambah Pegawai
                 </a>
             </x-slot>

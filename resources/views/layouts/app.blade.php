@@ -9,12 +9,24 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-NhfZj0MXBZYr1Py6kS3OXLtjQwXDGNANTZj3QN8cOWdDdknSv3zJX2DuPhE0AIh2k1/y5+ekUNhhkOdQVnDQ==" crossorigin="anonymous"></script>
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased">
     <div x-data="{
-        sidebarOpen: false,
+        sidebarOpen: window.innerWidth >= 1024 ? (localStorage.getItem('sidebarOpen') === 'false' ? false : true) : false,
+        toggleSidebar() {
+            this.sidebarOpen = !this.sidebarOpen;
+            if (window.innerWidth >= 1024) {
+                localStorage.setItem('sidebarOpen', this.sidebarOpen);
+            }
+        },
         getGreeting() {
             const hour = new Date().getHours();
             if (hour >= 5 && hour < 11) return 'Selamat Pagi';
@@ -43,9 +55,9 @@
 
                     <!-- Left Section: Menu Button + Greeting -->
                     <div class="flex items-center space-x-4">
-                        <!-- Mobile Menu Button -->
-                        <button @click.stop="sidebarOpen = !sidebarOpen"
-                                class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 lg:hidden transition-colors">
+                        <!-- Sidebar Toggle Button -->
+                        <button @click.stop="toggleSidebar()"
+                                class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 transition-colors">
                             <x-lucide-menu class="w-6 h-6" />
                         </button>
 

@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('perihal');
 
             // Foreign Keys
+            // Pegawai yang dituju (Pemohon Cuti / Petugas)
+            $table->foreignId('pegawai_id')->constrained('pegawais')->onDelete('cascade');
+
             $table->foreignId('penandatangan_id')->nullable()->constrained('pegawais')->onDelete('set null');
             $table->foreignId('created_by_user_id')->constrained('users')->onDelete('cascade');
 
@@ -41,14 +44,6 @@ return new class extends Migration
 
             $table->timestamps();
         });
-
-        // Tabel Pivot untuk relasi many-to-many antara surat dan pegawai
-        Schema::create('pegawai_surat', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('pegawai_id')->constrained('pegawais')->onDelete('cascade');
-            $table->foreignId('surat_id')->constrained('surats')->onDelete('cascade');
-            $table->timestamps();
-        });
     }
 
     /**
@@ -56,7 +51,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pegawai_surat');
         Schema::dropIfExists('surats');
         Schema::dropIfExists('kop_surats');
     }

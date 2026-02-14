@@ -1,0 +1,64 @@
+erDiagram
+    PEGAWAIS ||--o{ USERS : "pegawai_id (FK)"
+    PEGAWAIS ||--o{ SURATS : "pegawai_id (Target)"
+    PEGAWAIS ||--o{ SURATS : "penandatangan_id (Signer)"
+    USERS ||--|{ SURATS : "created_by_user_id (Creator)"
+    USERS ||--o{ SESSIONS : "user_id (FK)"
+
+    USERS {
+        int id PK
+        int pegawai_id FK
+        string username
+        string email
+        string image_path
+        string password
+        string remember_token
+        timestamp created_at
+        timestamp updated_at
+    }
+    PEGAWAIS {
+        int id PK
+        string nama_lengkap
+        string nip
+        string pangkat_golongan
+        string jabatan
+        string bidang_seksi
+        boolean is_kepala
+        timestamp created_at
+        timestamp updated_at
+    }
+    SURATS {
+        int id PK
+        string nomor_surat
+        enum jenis_surat
+        date tanggal_surat
+        string perihal
+        int pegawai_id FK
+        int penandatangan_id FK
+        int created_by_user_id FK
+        enum jenis_cuti
+        date tanggal_mulai_cuti
+        date tanggal_selesai_cuti
+        text keterangan_cuti
+        text dasar_hukum
+        text tujuan_tugas
+        string lokasi_tugas
+        date tanggal_mulai_tugas
+        date tanggal_selesai_tugas
+        string file_path
+        timestamp created_at
+        timestamp updated_at
+    }
+    PASSWORD_RESET_TOKENS {
+        string email PK
+        string token
+        timestamp created_at
+    }
+    SESSIONS {
+        string id PK
+        int user_id FK
+        string ip_address
+        text user_agent
+        longtext payload
+        int last_activity
+    }

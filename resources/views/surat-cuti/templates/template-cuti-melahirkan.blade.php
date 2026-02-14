@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Izin Cuti melahirkan</title>
+    <title>Surat Izin Cuti Melahirkan</title>
     <style>
         @page {
             size: A4;
@@ -16,7 +16,6 @@
             line-height: 1.5;
             color: #000;
             margin: 0;
-            padding: 10px;
         }
 
         .container {

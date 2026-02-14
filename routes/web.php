@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RiwayatSuratController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -10,9 +12,9 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -20,14 +22,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('surat-cuti', \App\Http\Controllers\SuratCutiController::class);
-    Route::get('/surat-cuti/{surat}/download', [\App\Http\Controllers\SuratCutiController::class, 'download'])->name('surat-cuti.download');
 
-    Route::resource('surat-tugas', \App\Http\Controllers\SuratTugasController::class);
-    Route::get('/surat-tugas/{surat}/download', [\App\Http\Controllers\SuratTugasController::class, 'download'])->name('surat-tugas.download');
 
-    Route::get('/riwayat-surat', function () {
-        return view('dashboard');
-    })->name('riwayat-surat');
+    Route::resource('surat-tugas', \App\Http\Controllers\SuratTugasController::class)->parameters(['surat-tugas' => 'surat_tugas']);
+
+
+    Route::get('/riwayat-surat', [RiwayatSuratController::class, 'index'])->name('riwayat-surat');
 
     Route::resource('pegawai', PegawaiController::class);
     Route::resource('users', UserController::class);

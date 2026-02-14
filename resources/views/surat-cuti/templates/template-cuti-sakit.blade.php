@@ -16,7 +16,6 @@
             line-height: 1.5;
             color: #000;
             margin: 0;
-            padding: 10px;
         }
 
         .container {

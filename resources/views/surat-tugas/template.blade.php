@@ -2,248 +2,276 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Surat Tugas - {{ $nomor_surat }}</title>
     <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
         body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 12pt;
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
             line-height: 1.5;
             color: #000;
             margin: 0;
             padding: 0;
+            background-color: #FAFAFA; /* Light gray background for screen view */
         }
 
         .container {
-            width: 21cm;
-            margin: 0 auto;
-            padding: 2.5cm 2.5cm 3cm 2.5cm;
-            box-sizing: border-box;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 2cm;
+            margin: 1cm auto;
             background: white;
+            box-sizing: border-box;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Kop Surat (Hardcoded for now, similar to Cuti Melahirkan) */
-        .kop-surat {
-            text-align: center;
-            border-bottom: 3px double black;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+        @media print {
+            body {
+                margin: 0;
+                background-color: white;
+            }
+            .container {
+                width: 100%;
+                min-height: auto;
+                margin: 0;
+                padding: 2cm;
+                box-shadow: none;
+                page-break-after: always;
+            }
+        }
+
+        /* Kop Surat Tugas Style */
+        .kop-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid black;
+            padding-bottom: 10px;
         }
 
-        .kop-surat img {
-            width: 90px;
+        .kop-logo {
+            width: 80px;
             height: auto;
+            margin-right: 20px;
+        }
+
+        .kop-text {
+            text-align: center;
+        }
+
+        .kop-text h2, .kop-text h3, .kop-text p {
+            margin: 0;
+            line-height: 1.2;
         }
 
         .kop-text h2 {
             font-size: 14pt;
             font-weight: bold;
-            margin: 0;
-            text-transform: uppercase;
         }
+
         .kop-text h3 {
             font-size: 12pt;
             font-weight: bold;
-            margin: 0;
-            text-transform: uppercase;
         }
+
         .kop-text p {
             font-size: 10pt;
-            margin: 0;
+            font-style: italic;
         }
 
-        /* Judul Dokumen */
-        .header-doc {
+        .judul-surat {
             text-align: center;
-            margin-bottom: 15px;
-        }
-        .header-doc h2 {
-            font-size: 14pt;
+            margin: 20px 0;
             font-weight: bold;
-            margin: 0;
             text-decoration: underline;
-            text-transform: uppercase;
-        }
-        .header-doc p {
-            margin: 5px 0 0 0;
-            font-size: 12pt;
         }
 
-        /* Grid Data Pegawai (Bentuk Form) */
-        .data-grid {
-            margin-top: 10px;
+        .nomor-surat {
+            text-align: center;
+            margin-top: -15px;
             margin-bottom: 20px;
         }
-        .data-grid table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .data-grid td {
-            padding: 2px 5px;
-            vertical-align: top;
-        }
-        .label {
-            width: 180px; /* Lebar label tetap */
-        }
-        .separator {
-            width: 20px;
-            text-align: center;
-        }
-        .text-bold {
-            font-weight: bold;
+
+        .content {
+            margin-top: 20px;
         }
 
-        /* List for assigned employees */
-        .pegawai-list {
-            margin-left: 20px;
-            list-style-type: decimal;
-        }
-        .pegawai-list li {
+        .data-row {
+            display: flex;
             margin-bottom: 5px;
         }
 
-
-        /* Footer & Tanda Tangan */
-        .footer-doc {
-            margin-top: 30px;
-            display: flex;
-            justify-content: flex-end; /* Tanda tangan di kanan */
+        .data-label {
+            width: 150px;
+            display: inline-block;
         }
-        .ttd-box {
+
+        .data-separator {
+            width: 20px;
+            display: inline-block;
             text-align: center;
-            width: 40%;
-        }
-        .ttd-box p {
-            margin: 0;
         }
 
-        /* Print Setting */
+        .data-value {
+            flex: 1;
+        }
+
+        .pegawai-list {
+            margin-left: 20px;
+        }
+
+        .pegawai-item {
+            margin-bottom: 15px;
+        }
+
+        .ttd {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .ttd-content {
+            display: inline-block;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .ttd-jabatan {
+            margin-bottom: 80px;
+        }
+
+        .ttd-nama {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
         @media print {
-            body { background: white; }
-            .container { width: 100%; margin: 0; padding: 2cm; box-shadow: none; }
-            @page { margin: 0; size: A4 portrait; }
+            body {
+                padding: 0;
+            }
+            .container {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 1. Kop Surat -->
-        <header class="kop-surat">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Lambang_Kementerian_Agama_Republik_Indonesia_baru.png/492px-Lambang_Kementerian_Agama_Republik_Indonesia_baru.png" alt="Logo">
+        <!-- Kop Surat -->
+        <div class="kop-header">
+            <img src="{{ asset('images/logo-kemenag-grayscale.webp') }}" alt="Logo" class="kop-logo">
             <div class="kop-text">
                 <h2>KEMENTERIAN AGAMA REPUBLIK INDONESIA</h2>
-                <h3>KANTOR KABUPATEN BENER MERIAH</h3>
-                <p>Jalan Utama No. 123, Kabupaten Bener Meriah</p>
+                <h3>KANTOR KEMENTERIAN AGAMA KABUPATEN BENER MERIAH</h3>
+                <p>Jln.Bandara Rembele – Pante RayaRedelong 24581</p>
+                <p>Telepon (0643) 8001010 E-Mail <a href="mailto:kankemenag.bener.meriah@gmail.com" style="color: blue; text-decoration: underline;">kankemenag.bener.meriah@gmail.com</a></p>
             </div>
-        </header>
-
-        <!-- 2. Judul & Nomor -->
-        <div class="header-doc">
-            <h2>SURAT PERINTAH TUGAS</h2>
-            <p>Nomor: {{ $nomor_surat }}</p>
         </div>
 
-        <!-- 3. Isi Utama -->
-        <main>
-            <p>Yang bertanda tangan di bawah ini:</p>
+        <div class="content">
+            <div class="judul-surat">SURAT TUGAS</div>
+            <div class="nomor-surat">Nomor : {{ $nomor_surat }}</div>
 
-            <div class="data-grid" style="margin-left: 30px;">
-                <table>
-                    <tr>
-                        <td class="label">Nama</td>
-                        <td class="separator">:</td>
-                        <td><span class="text-bold">{{ $nama_penandatangan }}</span></td>
-                    </tr>
-                    <tr>
-                        <td class="label">NIP</td>
-                        <td class="separator">:</td>
-                        <td>{{ $nip_penandatangan }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Jabatan</td>
-                        <td class="separator">:</td>
-                        <td>{{ $jabatan_penandatangan }}</td>
-                    </tr>
-                </table>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <tr>
+                    <td style="width: 100px; vertical-align: top;">Menimbang</td>
+                    <td style="width: 20px; vertical-align: top;">:</td>
+                    <td style="vertical-align: top;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 20px; vertical-align: top;">1.</td>
+                                <td style="text-align: justify;">Bahwa dalam rangka {{ $tujuan_tugas ?? '...' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="width: 20px; vertical-align: top;">2.</td>
+                                <td style="text-align: justify;">Bahwa nama yang tersebut dibawah ini dipandang relevan untuk mengikuti kegiatan dimaksud.</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="height: 10px;"></td>
+                </tr>
+                <tr>
+                    <td style="width: 100px; vertical-align: top;">Dasar</td>
+                    <td style="width: 20px; vertical-align: top;">:</td>
+                    <td style="vertical-align: top;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 20px; vertical-align: top;">1.</td>
+                                <td style="text-align: justify;">Peraturan Menteri Agama No. 6 Tahun 2022 Tentang Perubahan Atas Peraturan Menteri Agama Nomor 19 Tahun 2019 tentang Organisasi dan Tata Kerja Instansi Vertikal Kementerian Agama;</td>
+                            </tr>
+                            <tr>
+                                <td style="width: 20px; vertical-align: top;">2.</td>
+                                <td style="text-align: justify;">Surat Keputusan Kepala Kantor Kementerian Agama Kabupaten Bener Meriah, {{ $dasar_hukum }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <div style="text-align: center; margin: 20px 0; font-weight: bold;">MEMBERI TUGAS</div>
+
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 100px; vertical-align: top;">Kepada</td>
+                    <td style="vertical-align: top;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 100px;">Nama</td>
+                                <td style="width: 20px;">:</td>
+                                <td style="font-weight: bold;">{{ $pegawai->nama_lengkap }}</td>
+                            </tr>
+                            <tr>
+                                <td>NIP</td>
+                                <td>:</td>
+                                <td>{{ $pegawai->nip }}</td>
+                            </tr>
+                            <tr>
+                                <td>Jabatan</td>
+                                <td>:</td>
+                                <td>{{ $pegawai->jabatan }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="height: 10px;"></td>
+                </tr>
+                <tr>
+                    <td style="width: 100px; vertical-align: top;">Untuk</td>
+                    <td style="vertical-align: top; display: flex;">
+                        <div style="margin-right: 5px;">:</div>
+                        <div style="text-align: justify;">{{ $tujuan_tugas }} yang akan dilaksanakan pada tanggal {{ $tanggal_mulai_tugas }} s.d {{ $tanggal_selesai_tugas }} bertempat di {{ $lokasi_tugas }}.</div>
+                    </td>
+                </tr>
+            </table>
+
+            <div style="margin-top: 20px; text-align: justify;">
+                Demikian untuk dilaksanakan sebagaimana mestinya.
             </div>
 
-            <p style="margin-top: 20px;">Memerintahkan kepada:</p>
-
-            <div class="data-grid" style="margin-left: 30px;">
-                @if($pegawais_ditugaskan->isNotEmpty())
-                <ol class="pegawai-list">
-                    @foreach($pegawais_ditugaskan as $pegawai)
-                        <li>
-                            <table>
-                                <tr>
-                                    <td class="label">Nama</td>
-                                    <td class="separator">:</td>
-                                    <td><span class="text-bold">{{ $pegawai->nama_lengkap }}</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="label">NIP</td>
-                                    <td class="separator">:</td>
-                                    <td>{{ $pegawai->nip }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="label">Pangkat/Gol. Ruang</td>
-                                    <td class="separator">:</td>
-                                    <td>{{ $pegawai->pangkat_golongan }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="label">Jabatan</td>
-                                    <td class="separator">:</td>
-                                    <td>{{ $pegawai->jabatan }}</td>
-                                </tr>
-                            </table>
-                        </li>
-                    @endforeach
-                </ol>
-                @else
-                    <p>Tidak ada pegawai yang ditugaskan.</p>
-                @endif
-            </div>
-
-            <p style="margin-top: 20px;">Untuk melaksanakan tugas:</p>
-            <p style="margin-left: 30px;">"{{ $tujuan_tugas }}"</p>
-
-            <p style="margin-top: 20px;">dengan ketentuan:</p>
-            <div class="data-grid" style="margin-left: 30px;">
-                <table>
-                    <tr>
-                        <td class="label">Dasar Hukum</td>
-                        <td class="separator">:</td>
-                        <td>{{ $dasar_hukum }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Lokasi Tugas</td>
-                        <td class="separator">:</td>
-                        <td>{{ $lokasi_tugas }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Waktu Pelaksanaan</td>
-                        <td class="separator">:</td>
-                        <td>{{ $tanggal_mulai_tugas }} s.d. {{ $tanggal_selesai_tugas }}</td>
-                    </tr>
-                </table>
-            </div>
-
-            <p style="margin-top: 20px;">Demikian surat perintah tugas ini dibuat untuk dilaksanakan dengan sebaik-baiknya.</p>
-
-            <!-- 4. Tanda Tangan -->
-            <div class="footer-doc">
-                <div class="ttd-box">
-                    <p>Bener Meriah, {{ $tanggal_surat }}</p>
-                    <p style="margin-bottom: 5px;">Pejabat Pemberi Tugas,</p>
-                    <br><br><br>
-                    <p style="text-decoration: underline; font-weight: bold;">{{ $nama_penandatangan }}</p>
-                    <p>NIP. {{ $nip_penandatangan }}</p>
+            <div class="ttd">
+                <div class="ttd-content">
+                    <div style="margin-bottom: 5px; text-align: left;">Redelong, {{ $tanggal_surat }}</div>
+                    <div class="ttd-jabatan" style="text-align: left;">{{ $jabatan_penandatangan ?? 'Kepala' }}</div>
+                    <div class="ttd-nama" style="text-align: left; margin-top: 60px;">{{ $nama_penandatangan }}</div>
+                    <div class="ttd-nip" style="text-align: left;">NIP. {{ $nip_penandatangan }}</div>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
+    @if($trigger_print ?? false)
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+    @endif
 </body>
 </html>

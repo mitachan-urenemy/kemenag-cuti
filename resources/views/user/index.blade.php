@@ -7,7 +7,7 @@
             :padding="false"
         >
             <x-slot name="action">
-                <a href="{{ route('users.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg border border-transparent transition-colors duration-200 text-xs uppercase">
+                <a href="{{ route('users.create') }}" class="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all cursor-pointer flex items-center gap-2">
                     <x-lucide-user-plus class="w-4 h-4" />
                     Tambah User
                 </a>

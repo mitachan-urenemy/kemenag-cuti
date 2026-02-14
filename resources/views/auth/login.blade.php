@@ -56,7 +56,9 @@
 
     <div class="mt-6 text-center border-t border-gray-300 pt-4">
         <p class="text-xs text-gray-500">
-            © {{ date('Y') }} Kementerian Agama. All rights reserved.
+            © {{ date('Y') }} Kementerian Agama Bener Meriah
+            <br>
+            All rights reserved.
         </p>
     </div>
 </x-guest-layout>

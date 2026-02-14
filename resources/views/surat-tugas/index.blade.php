@@ -6,7 +6,7 @@
             subtitle="Berikut adalah daftar semua surat tugas yang telah dibuat."
         >
             <x-slot name="action">
-                <a href="{{ route('surat-tugas.create') }}" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white uppercase transition-colors duration-200 bg-green-600 border border-transparent rounded-lg hover:bg-green-700">
+                <a href="{{ route('surat-tugas.create') }}" class="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all cursor-pointer flex items-center gap-2">
                     <x-lucide-plus class="w-4 h-4" />
                     Buat Surat Tugas
                 </a>
@@ -16,7 +16,7 @@
                 url="{{ route('surat-tugas.index') }}"
                 :columns="[
                     'nomor_surat' => 'Nomor Surat',
-                    'pegawai_names' => 'Pegawai Ditugaskan',
+                    'pegawai_nama' => 'Pegawai Ditugaskan',
                     'tujuan_tugas' => 'Tujuan Tugas',
                     'tanggal_surat' => 'Tanggal Surat',
                     'actions' => 'Aksi',
@@ -34,8 +34,13 @@
 
                 <x-slot name="tbody">
                     <tr>
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900" x-text="item.nomor_surat"></td>
-                        <td class="px-6 py-4 text-sm text-gray-500" x-text="item.pegawai_names"></td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
+                            <div class="flex flex-col">
+                                <span class="font-mono text-sm font-semibold text-indigo-600 tracking-tight" x-text="item.nomor_surat"></span>
+                            </div>
+                        </td>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500" x-text="item.pegawai_nama"></td>
                         <td class="px-6 py-4 text-sm text-gray-500" x-text="item.tujuan_tugas"></td>
                         <td class="px-6 py-4 text-sm text-gray-500" x-text="new Date(item.tanggal_surat).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})"></td>
                         <td class="px-6 py-4 text-sm font-medium text-right">

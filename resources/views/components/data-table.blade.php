@@ -15,6 +15,13 @@
             page = 1;
             fetchData();
         }, { deep: true });
+
+        // Watch for changes in filters.jenis_surat to control filters.jenis_cuti
+        $watch('filters.jenis_surat', (value) => {
+            if (value !== 'cuti') {
+                this.filters.jenis_cuti = 'all'; // Reset jenis_cuti if jenis_surat is not 'cuti'
+            }
+        });
      ">
 
     <!-- Page Header -->
@@ -179,6 +186,10 @@
                 }
                 return pages;
             },
+            // New computed property for jenis_cuti disabled state
+            get isJenisCutiDisabled() {
+                return this.filters.jenis_surat !== 'cuti';
+            },
 
             // Methods
             fetchData() {
@@ -196,7 +207,7 @@
                     if (this.filters[key] !== null &&
                         this.filters[key] !== undefined &&
                         this.filters[key] !== '' &&
-                        this.filters[key] !== 'Semua') {
+                        this.filters[key] !== 'all') { // Changed 'Semua' to 'all' to match current usage
                         fetchUrl.searchParams.set(key, this.filters[key]);
                     }
                 }
@@ -263,7 +274,7 @@
             },
 
             clearFilters() {
-                this.filters = {};
+                this.filters = {}; // Clear all filters
                 this.search = '';
                 this.page = 1;
                 this.fetchData();

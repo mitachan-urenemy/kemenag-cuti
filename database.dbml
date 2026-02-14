@@ -1,0 +1,79 @@
+Project KemenagCuti {
+  database_type: 'MySQL'
+  Note: 'Database schema for Kemenag Cuti Application'
+}
+
+Table users {
+  id integer [primary key, increment]
+  pegawai_id integer [note: 'Foreign Key to pegawais']
+  username string [unique]
+  email string [unique, null]
+  image_path string [null]
+  password string
+  remember_token string [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table pegawais {
+  id integer [primary key, increment]
+  nama_lengkap string
+  nip string [unique, null]
+  pangkat_golongan string [null]
+  jabatan string
+  bidang_seksi string [null]
+  is_kepala boolean [default: false, note: 'True if this employee is a department head or official']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table surats {
+  id integer [primary key, increment]
+  nomor_surat string [unique]
+  jenis_surat enum('cuti', 'tugas')
+  tanggal_surat date
+  perihal string
+
+  // Foreign Keys
+  pegawai_id integer [note: 'Pegawai yang dituju (Pemohon Cuti / Petugas)']
+  penandatangan_id integer [note: 'Pejabat yang menandatangani']
+  created_by_user_id integer [note: 'Operator yang membuat surat']
+
+  // Cuti Specific
+  jenis_cuti enum('tahunan', 'sakit', 'melahirkan') [null]
+  tanggal_mulai_cuti date [null]
+  tanggal_selesai_cuti date [null]
+  keterangan_cuti text [null]
+
+  // Tugas Specific
+  dasar_hukum text [null]
+  tujuan_tugas text [null]
+  lokasi_tugas string [null]
+  tanggal_mulai_tugas date [null]
+  tanggal_selesai_tugas date [null]
+
+  file_path string [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table password_reset_tokens {
+  email string [primary key]
+  token string
+  created_at timestamp [null]
+}
+
+Table sessions {
+  id string [primary key]
+  user_id integer [null]
+  ip_address string [null]
+  user_agent text [null]
+  payload longtext
+  last_activity integer
+}
+
+Ref: users.pegawai_id > pegawais.id [delete: set null]
+Ref: surats.pegawai_id > pegawais.id [delete: cascade]
+Ref: surats.penandatangan_id > pegawais.id [delete: set null]
+Ref: surats.created_by_user_id > users.id [delete: cascade]
+Ref: sessions.user_id > users.id
