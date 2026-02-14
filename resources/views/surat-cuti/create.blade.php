@@ -40,14 +40,27 @@
                             />
                         </div>
 
+                        {{-- Nomor Surat --}}
+                        <div class="col-span-2">
+                             <x-forms.text
+                                title="Nomor Surat"
+                                name="nomor_surat"
+                                placeholder="Nomor Surat Hari Ini"
+                                :value="old('nomor_surat', $generatedNomorSurat)"
+                                required
+                            />
+                        </div>
+
                         {{-- Jenis Cuti --}}
                         <x-forms.select
                             title="Jenis Cuti"
                             name="jenis_cuti"
                             :options="[
-                                'tahunan' => 'Cuti Tahunan',
                                 'sakit' => 'Cuti Sakit',
                                 'melahirkan' => 'Cuti Melahirkan',
+                                'tahunan' => 'Cuti Tahunan',
+                                'alasan_penting' => 'Cuti Alasan Penting',
+                                'besar' => 'Cuti Besar',
                             ]"
                             placeholder="Pilih jenis cuti"
                             :selected="old('jenis_cuti')"
@@ -86,6 +99,15 @@
                                 placeholder="Contoh: untuk keperluan keluarga."
                                 rows="3"
                                 :value="old('keterangan_cuti')"
+                            />
+                        {{-- Tembusan --}}
+                        <div class="col-span-2">
+                             <x-forms.textarea
+                                title="Tembusan (Opsional)"
+                                name="tembusan"
+                                placeholder="Contoh: 1. Kepala Kantor Wilayah... (Pisahkan dengan baris baru)"
+                                rows="3"
+                                :value="old('tembusan')"
                             />
                         </div>
                     </div>

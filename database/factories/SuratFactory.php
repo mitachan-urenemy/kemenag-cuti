@@ -26,7 +26,6 @@ class SuratFactory extends Factory
             'pegawai_id' => Pegawai::factory(),
             'penandatangan_id' => Pegawai::factory(),
             'created_by_user_id' => User::factory(),
-            'file_path' => null,
         ];
     }
 
@@ -38,13 +37,15 @@ class SuratFactory extends Factory
         return $this->state(function (array $attributes) {
             $startDate = fake()->dateTimeBetween('-1 month', '+1 month');
             $endDate = (clone $startDate)->modify('+' . fake()->numberBetween(1, 5) . ' days');
+            $jenisCuti = fake()->randomElement(['tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar']);
 
             return [
                 'jenis_surat' => 'cuti',
-                'jenis_cuti' => fake()->randomElement(['tahunan', 'sakit', 'melahirkan']),
+                'jenis_cuti' => $jenisCuti,
                 'tanggal_mulai_cuti' => $startDate->format('Y-m-d'),
                 'tanggal_selesai_cuti' => $endDate->format('Y-m-d'),
                 'keterangan_cuti' => fake()->paragraph(),
+                'tembusan' => in_array($jenisCuti, ['tahunan', 'alasan_penting', 'besar']) ? "1. Kepala Kantor Wilayah Kementerian Agama Prov. Aceh\n2. Arsip" : null,
             ];
         });
     }

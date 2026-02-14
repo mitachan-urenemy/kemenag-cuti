@@ -103,7 +103,30 @@ class SuratCutiController extends Controller
                 ];
             });
 
-        return view('surat-cuti.create', compact('pegawais', 'kepalaPegawai'));
+        // Generate Nomor Surat Cuti: Format: B–001/KK.01.1.19/KP.08.2/01/2025
+        $bulan = date('m');
+        $tahun = date('Y');
+
+        // Find the last CUTI letter created this year to determine the sequence
+        // We filter by 'B-' prefix and ensures it's a 'cuti' type for safety
+        $lastSurat = Surat::whereYear('tanggal_surat', $tahun)
+                        ->where('jenis_surat', 'cuti')
+                        ->where('nomor_surat', 'like', 'B-%')
+                        ->latest('id')
+                        ->first();
+
+        $nextSequence = 1;
+        if ($lastSurat) {
+            // Extract the sequence number from format B-XXX/...
+            if (preg_match('/B-(\d+)\//', $lastSurat->nomor_surat, $matches)) {
+                $nextSequence = intval($matches[1]) + 1;
+            }
+        }
+
+        $nomorUrut = str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+        $generatedNomorSurat = "B-{$nomorUrut}/KK.01.1.19/KP.08.2/{$bulan}/{$tahun}";
+
+        return view('surat-cuti.create', compact('pegawais', 'kepalaPegawai', 'generatedNomorSurat'));
     }
 
     /**
@@ -116,7 +139,7 @@ class SuratCutiController extends Controller
         $surat = DB::transaction(function () use ($validated, $request) {
             $surat = Surat::create([
                 'jenis_surat' => 'cuti',
-                'nomor_surat' => 'TEMP-' . uniqid(), // Temporary number
+                'nomor_surat' => $validated['nomor_surat'],
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => 'Permohonan cuti ' . ucfirst($validated['jenis_cuti']),
                 'created_by_user_id' => $request->user()->id,
@@ -126,16 +149,8 @@ class SuratCutiController extends Controller
                 'tanggal_mulai_cuti' => $validated['tanggal_mulai_cuti'],
                 'tanggal_selesai_cuti' => $validated['tanggal_selesai_cuti'],
                 'keterangan_cuti' => $validated['keterangan_cuti'],
+                'tembusan' => $validated['tembusan'] ?? null,
             ]);
-
-            // Generate the real letter number
-            // Format: B–001/KK.01.1.19/KP.08.2/01/2025
-            $nomorUrut = str_pad($surat->id, 3, '0', STR_PAD_LEFT);
-            $tahun = date('Y', strtotime($validated['tanggal_surat']));
-            $bulan = date('m', strtotime($validated['tanggal_surat']));
-
-            $nomorSurat = "B-{$nomorUrut}/KK.01.1.19/KP.08.2/{$bulan}/{$tahun}";
-            $surat->update(['nomor_surat' => $nomorSurat]);
 
             return $surat;
         });
@@ -156,12 +171,7 @@ class SuratCutiController extends Controller
         // The main variable is $surat_cuti, but we'll call it $surat for consistency in the logic below
         $surat = $surat_cuti->load('pegawai', 'penandatangan', 'createdBy');
 
-        $template = match($surat->jenis_cuti) {
-            'melahirkan' => 'surat-cuti.templates.template-cuti-melahirkan',
-            'sakit' => 'surat-cuti.templates.template-cuti-sakit',
-            'tahunan' => 'surat-cuti.templates.template-cuti-tahunan',
-            default => abort(404),
-        };
+        $template = 'surat-cuti.template';
 
         $pegawai = $surat->pegawai;
         $penandatangan = $surat->penandatangan;
@@ -189,7 +199,7 @@ class SuratCutiController extends Controller
             'nama_kepala' => $penandatangan->nama_lengkap ?? 'Kepala Dinas',
             'nip_kepala' => $penandatangan->nip ?? '',
             'jabatan_kepala' => $penandatangan->jabatan ?? '',
-            'surat' => $surat, // Pass the original object for templates that need it
+            'surat' => $surat,
         ];
 
 
@@ -241,6 +251,7 @@ class SuratCutiController extends Controller
                 'tanggal_mulai_cuti' => $validated['tanggal_mulai_cuti'],
                 'tanggal_selesai_cuti' => $validated['tanggal_selesai_cuti'],
                 'keterangan_cuti' => $validated['keterangan_cuti'],
+                'tembusan' => $validated['tembusan'] ?? null,
             ]);
         });
 

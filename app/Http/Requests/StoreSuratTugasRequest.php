@@ -22,6 +22,7 @@ class StoreSuratTugasRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'nomor_surat' => ['required', 'string', 'max:255', 'unique:surats,nomor_surat'],
             'pegawai_id' => ['required', 'exists:pegawais,id'],
             'penandatangan_id' => ['required', 'exists:pegawais,id'],
             'tanggal_surat' => ['required', 'date'],

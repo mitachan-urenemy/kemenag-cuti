@@ -17,6 +17,20 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view('dashboard');
+        $suratCutiCount = Surat::where('jenis_surat', 'cuti')->count();
+        $suratTugasCount = Surat::where('jenis_surat', 'tugas')->count();
+        $totalSuratCount = Surat::count();
+
+        $recentActivities = Surat::with('pegawai')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('dashboard', compact(
+            'suratCutiCount',
+            'suratTugasCount',
+            'totalSuratCount',
+            'recentActivities'
+        ));
     }
 }

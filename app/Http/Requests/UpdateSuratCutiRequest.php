@@ -50,6 +50,7 @@ class UpdateSuratCutiRequest extends FormRequest
             'tanggal_mulai_cuti' => ['required', 'date', 'after_or_equal:tanggal_surat'],
             'tanggal_selesai_cuti' => ['required', 'date', 'after_or_equal:tanggal_mulai_cuti'],
             'keterangan_cuti' => ['nullable', 'string', 'max:1000'],
+            'tembusan' => ['nullable', 'string', 'max:1000'],
             'penandatangan_id' => ['required', 'exists:pegawais,id'],
         ];
     }

@@ -15,7 +15,7 @@ class RiwayatSuratController extends Controller
     public function index(Request $request)
     {
         // Data untuk filter jenis cuti
-        $jenisCutiOptions = ['tahunan', 'sakit', 'melahirkan'];
+        $jenisCutiOptions = ['tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar'];
 
         // Jika request adalah AJAX (untuk DataTable)
         if ($request->wantsJson()) {
@@ -45,6 +45,15 @@ class RiwayatSuratController extends Controller
                 if (in_array($jenisCuti, $jenisCutiOptions)) {
                     $query->where('jenis_surat', 'cuti')
                           ->where('jenis_cuti', $jenisCuti);
+                }
+            }
+
+            // Filter by status_pegawai (PNS/PPPK)
+            if ($statusPegawai = $request->input('status_pegawai')) {
+                if (in_array($statusPegawai, ['PNS', 'PPPK'])) {
+                    $query->whereHas('pegawai', function ($q) use ($statusPegawai) {
+                        $q->where('status_pegawai', $statusPegawai);
+                    });
                 }
             }
 

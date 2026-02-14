@@ -15,87 +15,115 @@
                         </a>
                     </x-slot>
 
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        {{-- Pegawai --}}
-                        <div class="col-span-2">
-                            <x-forms.select-search
-                                title="Pilih Pegawai"
-                                name="pegawai_id"
-                                placeholder="Cari dan pilih pegawai yang akan ditugaskan..."
-                                required
-                                :options="$pegawais"
-                                :selected="old('pegawai_id')"
-                            />
+                    <div class="space-y-6">
+                        <!-- Section: Informasi Pegawai & Surat -->
+                        <div class="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+                            <h3 class="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
+                                <x-lucide-user class="w-4 h-4 text-gray-500" />
+                                Informasi Pegawai & Surat
+                            </h3>
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                {{-- Pegawai & Penandatangan --}}
+                                <div class="col-span-1">
+                                    <x-forms.select-search
+                                        title="Pilih Pegawai"
+                                        name="pegawai_id"
+                                        placeholder="Cari pegawai..."
+                                        required
+                                        :options="$pegawais"
+                                        :selected="old('pegawai_id')"
+                                    />
+                                </div>
+                                <div class="col-span-1">
+                                    <x-forms.select-search
+                                        title="Pilih Penandatangan"
+                                        name="penandatangan_id"
+                                        placeholder="Pilih pejabat..."
+                                        required
+                                        :options="$kepalaPegawai"
+                                        :selected="old('penandatangan_id')"
+                                    />
+                                </div>
+
+                                {{-- Nomor & Tanggal Surat --}}
+                                <div class="col-span-1">
+                                    <x-forms.text
+                                        title="Nomor Surat"
+                                        name="nomor_surat"
+                                        placeholder="Nomor Surat"
+                                        :value="old('nomor_surat', $generatedNomorSurat)"
+                                        required
+                                    />
+                                </div>
+                                <div class="col-span-1">
+                                    <x-forms.date
+                                        title="Tanggal Surat"
+                                        name="tanggal_surat"
+                                        :value="old('tanggal_surat', date('Y-m-d'))"
+                                        required
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        {{-- Penandatangan --}}
-                        <div class="col-span-2">
-                           <x-forms.select-search
-                                title="Pilih Penandatangan"
-                                name="penandatangan_id"
-                                placeholder="Pilih pejabat yang akan menandatangani surat..."
-                                required
-                                :options="$kepalaPegawai"
-                                :selected="old('penandatangan_id')"
-                            />
+                        <!-- Section: Detail Tugas -->
+                        <div class="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+                            <h3 class="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
+                                <x-lucide-briefcase class="w-4 h-4 text-gray-500" />
+                                Detail Tugas
+                            </h3>
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                {{-- Dasar Hukum --}}
+                                <div class="col-span-2">
+                                    <x-forms.textarea
+                                        title="Dasar Hukum"
+                                        name="dasar_hukum"
+                                        placeholder="Contoh: Peraturan Menteri Agama No. 16 Tahun 2005"
+                                        rows="2"
+                                        :value="old('dasar_hukum')"
+                                        required
+                                    />
+                                </div>
+
+                                {{-- Tujuan & Lokasi --}}
+                                <div class="col-span-1">
+                                    <x-forms.text
+                                        title="Tujuan Tugas"
+                                        name="tujuan_tugas"
+                                        placeholder="Contoh: Mengikuti Rapat Koordinasi"
+                                        :value="old('tujuan_tugas')"
+                                        required
+                                    />
+                                </div>
+                                <div class="col-span-1">
+                                    <x-forms.text
+                                        title="Lokasi Tugas"
+                                        name="lokasi_tugas"
+                                        placeholder="Contoh: Jakarta"
+                                        :value="old('lokasi_tugas')"
+                                        required
+                                    />
+                                </div>
+
+                                {{-- Tanggal Mulai & Selesai --}}
+                                <div class="col-span-1">
+                                    <x-forms.date
+                                        title="Tanggal Mulai Tugas"
+                                        name="tanggal_mulai_tugas"
+                                        :value="old('tanggal_mulai_tugas')"
+                                        required
+                                    />
+                                </div>
+                                <div class="col-span-1">
+                                    <x-forms.date
+                                        title="Tanggal Selesai Tugas"
+                                        name="tanggal_selesai_tugas"
+                                        :value="old('tanggal_selesai_tugas')"
+                                        required
+                                    />
+                                </div>
+                            </div>
                         </div>
-
-                        {{-- Tanggal Surat --}}
-                        <x-forms.date
-                            title="Tanggal Surat"
-                            name="tanggal_surat"
-                            :value="old('tanggal_surat', date('Y-m-d'))"
-                            required
-                        />
-
-                        {{-- Dasar Hukum --}}
-                        <div class="col-span-2">
-                            <x-forms.textarea
-                                title="Dasar Hukum"
-                                name="dasar_hukum"
-                                placeholder="Contoh: Peraturan Menteri Agama No. 16 Tahun 2005"
-                                rows="3"
-                                :value="old('dasar_hukum')"
-                                required
-                            />
-                        </div>
-
-                        {{-- Tujuan Tugas --}}
-                        <div class="col-span-2">
-                            <x-forms.text
-                                title="Tujuan Tugas"
-                                name="tujuan_tugas"
-                                placeholder="Contoh: Mengikuti Rapat Koordinasi di Jakarta"
-                                :value="old('tujuan_tugas')"
-                                required
-                            />
-                        </div>
-
-                        {{-- Lokasi Tugas --}}
-                        <x-forms.text
-                            title="Lokasi Tugas"
-                            name="lokasi_tugas"
-                            placeholder="Contoh: Jakarta"
-                            :value="old('lokasi_tugas')"
-                            required
-                        />
-
-                        {{-- Tanggal Mulai Tugas --}}
-                        <x-forms.date
-                            title="Tanggal Mulai Tugas"
-                            name="tanggal_mulai_tugas"
-                            :value="old('tanggal_mulai_tugas')"
-                            required
-                        />
-
-                        {{-- Tanggal Selesai Tugas --}}
-                        <x-forms.date
-                            title="Tanggal Selesai Tugas"
-                            name="tanggal_selesai_tugas"
-                            :value="old('tanggal_selesai_tugas')"
-                            required
-                        />
-
                     </div>
 
                     <x-slot name="footer">

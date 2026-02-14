@@ -25,9 +25,11 @@
             </x-slot>
 
             {{-- Area Preview Surat --}}
-            {{-- Class 'bg-gray-100' hanya untuk visualisasi screen, tidak akan terprint --}}
-            <div class="p-4 bg-gray-100 border border-gray-200 rounded-lg overflow-auto">
-                @include($template, $data)
+            <div class="mt-6 flex justify-center bg-gray-100/50 p-8 rounded-xl border border-gray-200 overflow-auto">
+                 {{-- Wrapper to ensure the paper centers correctly and shadows are visible --}}
+                 <div class="transform scale-[0.8] md:scale-100 origin-top">
+                     @include($template, $data)
+                 </div>
             </div>
         </x-content-card>
     </div>

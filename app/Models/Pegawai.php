@@ -25,6 +25,7 @@ class Pegawai extends Model
         'jabatan',
         'bidang_seksi',
         'is_kepala',
+        'status_pegawai',
     ];
 
     /**

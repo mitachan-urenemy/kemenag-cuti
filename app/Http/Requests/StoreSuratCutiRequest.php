@@ -24,6 +24,7 @@ class StoreSuratCutiRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'nomor_surat' => ['required', 'string', 'max:255', Rule::unique(Surat::class, 'nomor_surat')],
             'pegawai_id' => [
                 'required',
                 'exists:pegawais,id',
@@ -38,11 +39,12 @@ class StoreSuratCutiRequest extends FormRequest
                     }
                 },
             ],
-            'jenis_cuti' => ['required', Rule::in(['tahunan', 'sakit', 'melahirkan'])],
+            'jenis_cuti' => ['required', Rule::in(['tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar'])],
             'tanggal_surat' => ['required', 'date'],
             'tanggal_mulai_cuti' => ['required', 'date', 'after_or_equal:tanggal_surat'],
             'tanggal_selesai_cuti' => ['required', 'date', 'after_or_equal:tanggal_mulai_cuti'],
             'keterangan_cuti' => ['nullable', 'string', 'max:1000'],
+            'tembusan' => ['nullable', 'string', 'max:1000'],
             'penandatangan_id' => ['required', 'exists:pegawais,id'],
         ];
     }

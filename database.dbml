@@ -22,6 +22,7 @@ Table pegawais {
   pangkat_golongan string [null]
   jabatan string
   bidang_seksi string [null]
+  status_pegawai enum('PNS', 'PPPK') [note: 'Employment status']
   is_kepala boolean [default: false, note: 'True if this employee is a department head or official']
   created_at timestamp
   updated_at timestamp
@@ -40,7 +41,7 @@ Table surats {
   created_by_user_id integer [note: 'Operator yang membuat surat']
 
   // Cuti Specific
-  jenis_cuti enum('tahunan', 'sakit', 'melahirkan') [null]
+  jenis_cuti enum('tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar') [null]
   tanggal_mulai_cuti date [null]
   tanggal_selesai_cuti date [null]
   keterangan_cuti text [null]
@@ -52,7 +53,7 @@ Table surats {
   tanggal_mulai_tugas date [null]
   tanggal_selesai_tugas date [null]
 
-  file_path string [null]
+  tembusan text [null]
   created_at timestamp
   updated_at timestamp
 }

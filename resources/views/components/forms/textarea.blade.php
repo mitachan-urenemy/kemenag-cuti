@@ -1,6 +1,7 @@
 @props([
     'title',
     'name',
+    'value' => '',
     'placeholder' => '',
     'note' => '',
     'required' => false,
@@ -23,7 +24,7 @@
         placeholder="{{ $placeholder }}"
         rows="{{ $rows }}"
         {{ $attributes->merge(['class' => 'mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm']) }}
-    ></textarea>
+    >{{ $value }}</textarea>
 
     {{-- Note --}}
     @if($note)

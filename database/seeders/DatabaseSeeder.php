@@ -43,9 +43,21 @@ class DatabaseSeeder extends Seeder
             [
                 'nama_lengkap' => 'Siti Aminah, S.E.',
                 'jabatan' => 'Analis Keuangan',
+                'pangkat_golongan' => 'Penata Muda (III/a)',
+                'is_kepala' => false,
+                'status_pegawai' => 'PNS',
+            ]
+        );
+
+        $staff2 = Pegawai::firstOrCreate(
+            ['nip' => '199203032016032003'],
+            [
+                'nama_lengkap' => 'Siti Aminah, S.E.',
+                'jabatan' => 'Analis Keuangan',
                 'bidang_seksi' => 'Seksi Keuangan',
                 'pangkat_golongan' => 'Penata Muda (III/a)',
                 'is_kepala' => false,
+                'status_pegawai' => 'PPPK',
             ]
         );
 
@@ -82,7 +94,9 @@ class DatabaseSeeder extends Seeder
                 'jenis_cuti' => 'tahunan',
                 'tanggal_mulai_cuti' => '2026-02-10',
                 'tanggal_selesai_cuti' => '2026-02-15',
+                'tanggal_selesai_cuti' => '2026-02-15',
                 'keterangan_cuti' => 'Keperluan keluarga mendesak di luar kota.',
+                'tembusan' => "1. Kepala Kantor Wilayah Kementerian Agama Prov. Aceh\n2. Arsip",
             ]
         );
 

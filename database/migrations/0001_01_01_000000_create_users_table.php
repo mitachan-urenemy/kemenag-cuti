@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('jabatan');
             $table->string('bidang_seksi')->nullable();
             $table->boolean('is_kepala')->default(false)->comment('True if this employee is a department head or official');
+            $table->enum('status_pegawai', ['PNS', 'PPPK'])->default('PNS');
             $table->timestamps();
         });
 

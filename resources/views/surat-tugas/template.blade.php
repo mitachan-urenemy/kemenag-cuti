@@ -168,7 +168,7 @@
             <div class="kop-text">
                 <h2>KEMENTERIAN AGAMA REPUBLIK INDONESIA</h2>
                 <h3>KANTOR KEMENTERIAN AGAMA KABUPATEN BENER MERIAH</h3>
-                <p>Jln.Bandara Rembele – Pante RayaRedelong 24581</p>
+                <p>Jln.Bandara Rembele – Pante Raya Redelong 24581</p>
                 <p>Telepon (0643) 8001010 E-Mail <a href="mailto:kankemenag.bener.meriah@gmail.com" style="color: blue; text-decoration: underline;">kankemenag.bener.meriah@gmail.com</a></p>
             </div>
         </div>

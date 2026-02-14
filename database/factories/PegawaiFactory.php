@@ -23,6 +23,7 @@ class PegawaiFactory extends Factory
             'jabatan' => fake()->jobTitle(),
             'bidang_seksi' => fake()->randomElement(['Subbagian Tata Usaha', 'Seksi Pendidikan Madrasah', 'Seksi Pendidikan Agama Islam', 'Seksi Penyelenggaraan Haji dan Umrah']),
             'is_kepala' => false,
+            'status_pegawai' => fake()->randomElement(['PNS', 'PPPK']),
         ];
     }
 

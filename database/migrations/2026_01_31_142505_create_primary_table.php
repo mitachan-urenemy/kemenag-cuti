@@ -27,7 +27,7 @@ return new class extends Migration
             $table->foreignId('created_by_user_id')->constrained('users')->onDelete('cascade');
 
             // Kolom Khusus untuk Surat Cuti (nullable)
-            $table->enum('jenis_cuti', ['tahunan', 'sakit', 'melahirkan'])->nullable();
+            $table->enum('jenis_cuti', ['tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar'])->nullable();
             $table->date('tanggal_mulai_cuti')->nullable();
             $table->date('tanggal_selesai_cuti')->nullable();
             $table->text('keterangan_cuti')->nullable();
@@ -38,10 +38,6 @@ return new class extends Migration
             $table->string('lokasi_tugas')->nullable();
             $table->date('tanggal_mulai_tugas')->nullable();
             $table->date('tanggal_selesai_tugas')->nullable();
-
-            // Path untuk menyimpan file surat yang di-generate
-            $table->string('file_path')->nullable();
-
             $table->timestamps();
         });
     }

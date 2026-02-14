@@ -72,7 +72,33 @@ class SuratTugasController extends Controller
                 ];
             });
 
-        return view('surat-tugas.create', compact('pegawais', 'kepalaPegawai'));
+        // Generate Nomor Surat Tugas: Format: B–001/KK.01.1.19/KP.02.3/01/2025
+        // KP.02.3 = Perjalanan Dinas (TETAP)
+        // Prefix B- (DIKEMBALIKAN SESUAI PERMINTAAN USER)
+        $bulan = date('m');
+        $tahun = date('Y');
+
+        // Find the last TUGAS letter created this year to determine the sequence
+        // We filter by 'B-' prefix AND 'tugas' type to separate from Cuti
+        $lastSurat = Surat::whereYear('tanggal_surat', $tahun)
+                        ->where('jenis_surat', 'tugas')
+                        ->where('nomor_surat', 'like', 'B-%')
+                        ->latest('id')
+                        ->first();
+
+        $nextSequence = 1;
+        if ($lastSurat) {
+            // Extract the sequence number from format B-XXX/...
+            if (preg_match('/B-(\d+)\//', $lastSurat->nomor_surat, $matches)) {
+                $nextSequence = intval($matches[1]) + 1;
+            }
+        }
+
+        $nomorUrut = str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+        // Changed code to KP.02.3 (Perjalanan Dinas Dalam Negeri)
+        $generatedNomorSurat = "B-{$nomorUrut}/KK.01.1.19/KP.02.3/{$bulan}/{$tahun}";
+
+        return view('surat-tugas.create', compact('pegawais', 'kepalaPegawai', 'generatedNomorSurat'));
     }
 
     /**
@@ -85,7 +111,7 @@ class SuratTugasController extends Controller
         $surat = DB::transaction(function () use ($validated, $request) {
             $surat = Surat::create([
                 'jenis_surat' => 'tugas',
-                'nomor_surat' => 'TEMP-' . uniqid(), // Temporary number
+                'nomor_surat' => $validated['nomor_surat'],
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => $validated['tujuan_tugas'],
                 'created_by_user_id' => $request->user()->id,
@@ -99,15 +125,6 @@ class SuratTugasController extends Controller
                 'tanggal_mulai_tugas' => $validated['tanggal_mulai_tugas'],
                 'tanggal_selesai_tugas' => $validated['tanggal_selesai_tugas'],
             ]);
-
-            // Generate the real letter number
-            // Format: B–001/KK.01.1.19/KP.08.2/01/2025
-            $nomorUrut = str_pad($surat->id, 3, '0', STR_PAD_LEFT);
-            $tahun = date('Y', strtotime($validated['tanggal_surat']));
-            $bulan = date('m', strtotime($validated['tanggal_surat']));
-
-            $nomorSurat = "B-{$nomorUrut}/KK.01.1.19/KP.08.2/{$bulan}/{$tahun}";
-            $surat->update(['nomor_surat' => $nomorSurat]);
 
             return $surat;
         });

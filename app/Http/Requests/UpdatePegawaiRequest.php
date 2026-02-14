@@ -29,6 +29,7 @@ class UpdatePegawaiRequest extends FormRequest
             'jabatan' => ['required', 'string', 'max:255'],
             'pangkat_golongan' => ['nullable', 'string', 'max:255'],
             'bidang_seksi' => ['nullable', 'string', 'max:255'],
+            'status_pegawai' => ['required', 'in:PNS,PPPK'],
         ];
     }
 }

@@ -40,6 +40,14 @@
                         required
                     />
 
+                    <x-forms.select
+                        title="Status Pegawai"
+                        name="status_pegawai"
+                        :options="['PNS' => 'PNS', 'PPPK' => 'PPPK']"
+                        :selected="old('status_pegawai')"
+                        required
+                    />
+
                     <x-forms.text
                         title="Pangkat / Golongan"
                         name="pangkat_golongan"

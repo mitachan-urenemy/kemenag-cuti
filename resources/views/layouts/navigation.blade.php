@@ -12,10 +12,10 @@
 </div>
 
 <!-- Sidebar -->
-<aside :class="sidebarOpen ? 'translate-x-0 w-86' : '-translate-x-full lg:translate-x-0 lg:w-20 w-86'"
+<aside :class="sidebarOpen ? 'translate-x-0 w-86' : '-translate-x-full lg:translate-x-0 lg:w-24 w-86'"
        class="fixed inset-y-0 left-0 z-20 transform transition-all duration-300 ease-in-out lg:static flex flex-col bg-gradient-to-br from-green-primary via-green-primary to-green-secondary shadow-2xl overflow-hidden">
 
-    <div :class="sidebarOpen ? 'w-86' : 'w-86 lg:w-20'" class="flex flex-col h-full shrink-0 transition-all duration-300">
+    <div :class="sidebarOpen ? 'w-86' : 'w-86 lg:w-24'" class="flex flex-col h-full shrink-0 transition-all duration-300">
         <!-- Logo Section -->
         <div class="flex items-center px-6 py-6 border-b border-white/10 shrink-0 h-[88px] box-border transition-all duration-300"
              :class="sidebarOpen ? 'justify-start' : 'justify-center lg:px-0'">
@@ -98,43 +98,108 @@
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent transition-all duration-300"
-             :class="sidebarOpen ? '' : 'lg:px-2'">
+        <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
 
             <!-- Dashboard -->
-            <x-sidebar-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="layout-dashboard">
-                Dashboard
-            </x-sidebar-link>
+            <a href="{{ route('dashboard') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('dashboard') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-layout-dashboard class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('dashboard') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Dashboard
+                </span>
+            </a>
 
             <!-- Surat Cuti -->
-            <x-sidebar-link :href="route('surat-cuti.index')" :active="request()->routeIs('surat-cuti.*')" icon="file-text">
-                Surat Cuti
-            </x-sidebar-link>
+            <a href="{{ route('surat-cuti.index') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('surat-cuti.*') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-file-text class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('surat-cuti.*') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Surat Cuti
+                </span>
+            </a>
 
             <!-- Surat Tugas -->
-            <x-sidebar-link :href="route('surat-tugas.index')" :active="request()->routeIs('surat-tugas.*')" icon="briefcase">
-                Surat Tugas
-            </x-sidebar-link>
+            <a href="{{ route('surat-tugas.index') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('surat-tugas.*') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-briefcase class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('surat-tugas.*') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Surat Tugas
+                </span>
+            </a>
 
             <!-- Riwayat Surat -->
-            <x-sidebar-link :href="route('riwayat-surat')" :active="request()->routeIs('riwayat-surat')" icon="history">
-                Riwayat Surat
-            </x-sidebar-link>
+            <a href="{{ route('riwayat-surat') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('riwayat-surat') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-history class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('riwayat-surat') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Riwayat Surat
+                </span>
+            </a>
 
             <!-- Divider -->
-            <div class="py-2">
+            <div class="py-2" x-show="sidebarOpen">
                 <div class="border-t border-white/10"></div>
+                <div class="mt-2 px-2 text-xs font-semibold text-white/40 uppercase tracking-wider" x-show="sidebarOpen">
+                    Manajemen
+                </div>
+            </div>
+            <div class="py-2" x-show="!sidebarOpen">
+                <div class="border-t border-white/10 w-8 mx-auto"></div>
             </div>
 
             <!-- Pegawai -->
-            <x-sidebar-link :href="route('pegawai.index')" :active="request()->routeIs('pegawai.*')" icon="contact">
-                Pegawai
-            </x-sidebar-link>
+            <a href="{{ route('pegawai.index') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('pegawai.*') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-contact class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('pegawai.*') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Pegawai
+                </span>
+            </a>
 
             <!-- Manajemen User -->
-            <x-sidebar-link :href="route('users.index')" :active="request()->routeIs('users.*')" icon="users">
-                Manajemen User
-            </x-sidebar-link>
+            <a href="{{ route('users.index') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('users.*') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-users class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('users.*') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    User
+                </span>
+            </a>
 
         </nav>
 

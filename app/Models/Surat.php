@@ -25,13 +25,13 @@ class Surat extends Model
         'perihal',
         'penandatangan_id',
         'created_by_user_id',
-        'file_path',
 
         // Cuti-specific fields
         'jenis_cuti',
         'tanggal_mulai_cuti',
         'tanggal_selesai_cuti',
         'keterangan_cuti',
+        'tembusan',
 
         // Tugas-specific fields
         'dasar_hukum',
