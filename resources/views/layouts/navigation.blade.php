@@ -1,100 +1,220 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
+<!-- Sidebar Overlay (Mobile) -->
+<div x-show="sidebarOpen"
+     @click="sidebarOpen = false"
+     x-transition:enter="transition-opacity ease-linear duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-linear duration-300"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
+     style="display: none;">
+</div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                </div>
+<!-- Sidebar -->
+<aside :class="sidebarOpen ? 'translate-x-0 w-86' : '-translate-x-full lg:translate-x-0 lg:w-24 w-86'"
+       class="fixed inset-y-0 left-0 z-20 transform transition-all duration-300 ease-in-out lg:static flex flex-col bg-gradient-to-br from-green-primary via-green-primary to-green-secondary shadow-2xl overflow-hidden">
+
+    <div :class="sidebarOpen ? 'w-86' : 'w-86 lg:w-24'" class="flex flex-col h-full shrink-0 transition-all duration-300">
+        <!-- Logo Section -->
+        <div class="flex items-center px-6 py-6 border-b border-white/10 shrink-0 h-[88px] box-border transition-all duration-300"
+             :class="sidebarOpen ? 'justify-start' : 'justify-center lg:px-0'">
+            <!-- Logo -->
+            <div class="bg-white/50 backdrop-blur-sm rounded-xl p-1 transition-all duration-300"
+                 :class="sidebarOpen ? 'mr-4' : 'mr-0'">
+                <img
+                    src="{{ asset('images/logo-kemenag.webp') }}"
+                    class="w-12 h-12"
+                    alt="Logo Kemenag"
+                >
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+            <!-- App Name & Description -->
+            <div x-show="sidebarOpen"
+                 x-transition:enter="transition ease-out duration-300 delay-100"
+                 x-transition:enter-start="opacity-0 translate-x-[-10px]"
+                 x-transition:enter-end="opacity-100 translate-x-0"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="leading-tight whitespace-nowrap overflow-hidden">
+                <h1 class="text-white text-md font-bold uppercase tracking-wide">
+                    {{ env('APP_NAME', 'CUTI KEMENAG') }}
+                </h1>
+                <p class="text-white/70 text-xs">
+                    Sistem Manajemen Surat
+                </p>
+            </div>
+        </div>
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+        <!-- Date & Time Section (Compact) -->
+        <div class="transition-all duration-300 overflow-hidden"
+             :class="sidebarOpen ? 'px-4 py-4 border-b border-white/10 opacity-100 max-h-40' : 'h-0 opacity-0 border-none'">
+            <div x-data="{
+                currentTime: '',
+                currentDate: '',
+                updateDateTime() {
+                    const now = new Date();
 
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                    // Format waktu: HH:MM
+                    this.currentTime = now.toLocaleTimeString('id-ID', {
+                        second: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
 
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
+                    // Format tanggal: Jumat, 25 Januari 2026
+                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown>
+                    const dayName = days[now.getDay()];
+                    const date = now.getDate();
+                    const month = months[now.getMonth()];
+                    const year = now.getFullYear();
+
+                    this.currentDate = `${dayName}, ${date} ${month} ${year}`;
+                }
+            }"
+            x-init="updateDateTime(); setInterval(() => updateDateTime(), 1000)"
+            class="bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2.5">
+
+                <!-- Time & Date in one line -->
+                <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center space-x-1.5">
+                        <x-lucide-clock class="w-4 h-4 text-white/60" />
+                        <span x-text="currentTime" class="text-lg font-bold text-white font-mono"></span>
+                    </div>
+                    <span class="text-xs text-white/50 font-medium">WIB</span>
+                </div>
+
+                <!-- Date -->
+                <div class="flex items-center space-x-1.5">
+                    <x-lucide-calendar class="w-3.5 h-3.5 text-white/60" />
+                    <p x-text="currentDate" class="text-xs text-white/80"></p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+
+            <!-- Dashboard -->
+            <a href="{{ route('dashboard') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('dashboard') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-layout-dashboard class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('dashboard') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Dashboard
+                </span>
+            </a>
+
+            <!-- Surat Cuti -->
+            <a href="{{ route('surat-cuti.index') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('surat-cuti.*') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-file-text class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('surat-cuti.*') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Surat Cuti
+                </span>
+            </a>
+
+            <!-- Surat Tugas -->
+            <a href="{{ route('surat-tugas.index') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('surat-tugas.*') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-briefcase class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('surat-tugas.*') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Surat Tugas
+                </span>
+            </a>
+
+            <!-- Riwayat Surat -->
+            <a href="{{ route('riwayat-surat') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('riwayat-surat') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-history class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('riwayat-surat') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Riwayat Surat
+                </span>
+            </a>
+
+            <!-- Divider -->
+            <div class="py-2" x-show="sidebarOpen">
+                <div class="border-t border-white/10"></div>
+                <div class="mt-2 px-2 text-xs font-semibold text-white/40 uppercase tracking-wider" x-show="sidebarOpen">
+                    Manajemen
+                </div>
+            </div>
+            <div class="py-2" x-show="!sidebarOpen">
+                <div class="border-t border-white/10 w-8 mx-auto"></div>
             </div>
 
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+            <!-- Pegawai -->
+            <a href="{{ route('pegawai.index') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('pegawai.*') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-contact class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('pegawai.*') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    Pegawai
+                </span>
+            </a>
+
+            <!-- Manajemen User -->
+            <a href="{{ route('users.index') }}"
+               class="relative flex items-center px-3.5 py-3 rounded-xl transition-all duration-300 group
+                      {{ request()->routeIs('users.*') ? 'bg-white text-green-primary shadow-lg font-semibold' : 'text-white/90 hover:bg-white/10 hover:translate-x-1' }}"
+               :class="sidebarOpen ? 'justify-start' : 'justify-center px-0'">
+                <x-lucide-users class="w-5 h-5 flex-shrink-0 transition-colors duration-300 {{ request()->routeIs('users.*') ? 'text-green-primary' : 'text-white/80 group-hover:text-white' }}" />
+                <span x-show="sidebarOpen"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0 -translate-x-2"
+                      x-transition:enter-end="opacity-100 translate-x-0"
+                      class="ml-3 text-sm tracking-wide truncate">
+                    User
+                </span>
+            </a>
+
+        </nav>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-white/10 shrink-0 h-[64px] box-border transition-all duration-300 overflow-hidden"
+             :class="sidebarOpen ? 'opacity-100' : 'h-0 opacity-0 overflow-hidden py-0 border-none'">
+            <div class="text-center space-y-1">
+                <p class="text-xs text-white/60 font-medium whitespace-nowrap">
+                    {{ env('APP_NAME', 'CUTI KEMENAG') }}
+                </p>
+                <p class="text-xs text-white/40 whitespace-nowrap">
+                    {{ env('APP_VERSION', 'v1.0') }} © {{ date('Y') }}
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-        </div>
-
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
-        </div>
-    </div>
-</nav>
+</aside>
