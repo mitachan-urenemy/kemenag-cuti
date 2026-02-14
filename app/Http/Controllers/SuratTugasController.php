@@ -7,7 +7,7 @@ use App\Models\Surat;
 use App\Http\Requests\StoreSuratTugasRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
+
 use Carbon\Carbon;
 
 class SuratTugasController extends Controller
@@ -17,42 +17,44 @@ class SuratTugasController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->wantsJson()) {
-            $query = Surat::where('jenis_surat', 'tugas')->with('pegawais');
+        $query = Surat::where('jenis_surat', 'tugas')->with('pegawai');
 
-            // Handle search
-            if ($request->filled('search')) {
-                $searchValue = $request->input('search');
-                $query->where(function ($q) use ($searchValue) {
-                    $q->where('nomor_surat', 'like', "%{$searchValue}%")
-                        ->orWhere('tujuan_tugas', 'like', "%{$searchValue}%")
-                        ->orWhereHas('pegawais', function ($q) use ($searchValue) {
-                            $q->where('nama_lengkap', 'like', "%{$searchValue}%");
-                        });
-                });
-            }
-
-            // Handle sorting
-            $sortBy = $request->input('sort_by', 'tanggal_surat');
-            $sortDir = $request->input('sort_dir', 'desc');
-            $query->orderBy($sortBy, $sortDir);
-
-            $perPage = $request->input('per_page', 10);
-            $surats = $query->paginate($perPage);
-
-            // Transform data
-            $surats->getCollection()->transform(function ($surat) {
-                $surat->pegawai_names = $surat->pegawais->pluck('nama_lengkap')->implode(', ');
-                return $surat;
+        // Handle search
+        if ($request->filled('search')) {
+            $searchValue = $request->input('search');
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('nomor_surat', 'like', "%{$searchValue}%")
+                    ->orWhere('tujuan_tugas', 'like', "%{$searchValue}%")
+                    ->orWhereHas('pegawai', function ($q) use ($searchValue) {
+                        $q->where('nama_lengkap', 'like', "%{$searchValue}%");
+                    });
             });
+        }
 
+        // Handle sorting
+        $sortBy = $request->input('sort_by', 'tanggal_surat');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $query->orderBy($sortBy, $sortDir);
+
+        $perPage = $request->input('per_page', 10);
+        $surats = $query->paginate($perPage);
+
+        // Transform data
+        $surats->getCollection()->transform(function ($surat) {
+            $surat->pegawai_nama = $surat->pegawai->nama_lengkap ?? '-';
+            return $surat;
+        });
+
+        if ($request->wantsJson()) {
             return response()->json([
                 'data' => $surats->items(),
                 'total' => $surats->total(),
             ]);
         }
 
-        return view('surat-tugas.index');
+        return view('surat-tugas.index', [
+            'surats' => $surats->appends(request()->query())
+        ]);
     }
 
     /**
@@ -87,6 +89,7 @@ class SuratTugasController extends Controller
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => $validated['tujuan_tugas'],
                 'created_by_user_id' => $request->user()->id,
+                'pegawai_id' => $validated['pegawai_id'],
                 'penandatangan_id' => $validated['penandatangan_id'],
 
                 // Tugas-specific fields
@@ -96,9 +99,6 @@ class SuratTugasController extends Controller
                 'tanggal_mulai_tugas' => $validated['tanggal_mulai_tugas'],
                 'tanggal_selesai_tugas' => $validated['tanggal_selesai_tugas'],
             ]);
-
-            // Attach multiple employees
-            $surat->pegawais()->attach($validated['pegawai_ids']);
 
             // Generate the real letter number
             // Format: B–001/KK.01.1.19/KP.08.2/01/2025
@@ -126,11 +126,11 @@ class SuratTugasController extends Controller
     public function show(Surat $surat_tugas)
     {
         // Eager load necessary relationships
-        $surat = $surat_tugas->load('pegawais', 'penandatangan', 'createdBy');
+        $surat = $surat_tugas->load('pegawai', 'penandatangan', 'createdBy');
 
         $template = 'surat-tugas.template'; // For now, a single template for Surat Tugas
 
-        $pegawais_ditugaskan = $surat->pegawais; // Collection of Pegawai
+        $pegawai = $surat->pegawai;
         $penandatangan = $surat->penandatangan;
 
         $data = [
@@ -141,12 +141,17 @@ class SuratTugasController extends Controller
             'lokasi_tugas' => $surat->lokasi_tugas,
             'tanggal_mulai_tugas' => Carbon::parse($surat->tanggal_mulai_tugas)->translatedFormat('d F Y'),
             'tanggal_selesai_tugas' => Carbon::parse($surat->tanggal_selesai_tugas)->translatedFormat('d F Y'),
-            'pegawais_ditugaskan' => $pegawais_ditugaskan, // Pass collection
+            'pegawai' => $pegawai, // Pass single object
             'nama_penandatangan' => $penandatangan->nama_lengkap ?? '',
             'nip_penandatangan' => $penandatangan->nip ?? '',
             'jabatan_penandatangan' => $penandatangan->jabatan ?? '',
             'surat' => $surat, // Pass the original object for templates that need it
         ];
+
+        if (request()->has('print')) {
+            $data['trigger_print'] = true;
+            return view($template, $data);
+        }
 
         return view('surat-tugas.show', [
             'surat' => $surat, // for action buttons
@@ -156,56 +161,52 @@ class SuratTugasController extends Controller
     }
 
     /**
-     * Generate and download the PDF for the specified resource.
-     */
-    public function a(Surat $surat)
-    {
-        $surat->load('pegawais', 'penandatangan', 'createdBy');
-
-        $template = 'surat-tugas.template'; // For now, a single template for Surat Tugas
-
-        $pegawais_ditugaskan = $surat->pegawais; // Collection of Pegawai
-        $penandatangan = $surat->penandatangan;
-
-        $data = [
-            'nomor_surat' => $surat->nomor_surat,
-            'tanggal_surat' => Carbon::parse($surat->tanggal_surat)->translatedFormat('d F Y'),
-            'dasar_hukum' => $surat->dasar_hukum,
-            'tujuan_tugas' => $surat->tujuan_tugas,
-            'lokasi_tugas' => $surat->lokasi_tugas,
-            'tanggal_mulai_tugas' => Carbon::parse($surat->tanggal_mulai_tugas)->translatedFormat('d F Y'),
-            'tanggal_selesai_tugas' => Carbon::parse($surat->tanggal_selesai_tugas)->translatedFormat('d F Y'),
-            'pegawais_ditugaskan' => $pegawais_ditugaskan, // Pass collection
-            'nama_penandatangan' => $penandatangan->nama_lengkap ?? '',
-            'nip_penandatangan' => $penandatangan->nip ?? '',
-            'jabatan_penandatangan' => $penandatangan->jabatan ?? '',
-            'surat' => $surat, // Pass the original object for templates that need it
-        ];
-
-        $pdf = PDF::loadView($template, $data)
-            ->setPaper('a4', 'portrait');
-
-        // Generate filename
-        $filename = 'Surat_Tugas_' . str_replace(' ', '_', $surat->tujuan_tugas) . ' _' .
-                    now()->format('YmdHis') . '.pdf';
-
-        return $pdf->download($filename);
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Surat $surat_tugas)
     {
-        //
+        $surat_tugas->load('pegawai'); // Eager load related pegawai
+
+        $pegawais = Pegawai::pluck('nama_lengkap', 'id');
+
+        $kepalaPegawai = Pegawai::where('is_kepala', true)
+            ->get()
+            ->mapWithKeys(function ($kepala) {
+                return [
+                    $kepala->id => $kepala->nama_lengkap . ' (' . $kepala->jabatan . ')',
+                ];
+            });
+
+        return view('surat-tugas.edit', compact('surat_tugas', 'pegawais', 'kepalaPegawai'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(StoreSuratTugasRequest $request, Surat $surat_tugas)
     {
-        //
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($validated, $surat_tugas) {
+            $surat_tugas->update([
+                'tanggal_surat' => $validated['tanggal_surat'],
+                'perihal' => $validated['tujuan_tugas'],
+                'pegawai_id' => $validated['pegawai_id'],
+                'penandatangan_id' => $validated['penandatangan_id'],
+                'dasar_hukum' => $validated['dasar_hukum'],
+                'tujuan_tugas' => $validated['tujuan_tugas'],
+                'lokasi_tugas' => $validated['lokasi_tugas'],
+                'tanggal_mulai_tugas' => $validated['tanggal_mulai_tugas'],
+                'tanggal_selesai_tugas' => $validated['tanggal_selesai_tugas'],
+            ]);
+        });
+
+        return redirect()->route('surat-tugas.show', $surat_tugas)
+            ->with('notification', [
+                'type' => 'success',
+                'title' => 'Berhasil!',
+                'message' => 'Surat tugas telah berhasil diperbarui.'
+            ]);
     }
 
     /**

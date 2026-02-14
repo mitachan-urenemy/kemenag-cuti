@@ -6,7 +6,7 @@ use App\Models\Surat;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreSuratCutiRequest extends FormRequest
+class UpdateSuratCutiRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,18 +23,25 @@ class StoreSuratCutiRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Get the surat_cuti instance being updated from the route
+        // This is necessary to exclude the current surat_cuti from the active leave check
+        $suratId = $this->route('surat_cuti')->id ?? null;
+
         return [
             'pegawai_id' => [
                 'required',
                 'exists:pegawais,id',
-                function ($attribute, $value, $fail) {
-                    $activeLeave = Surat::where('jenis_surat', 'cuti')
+                function ($attribute, $value, $fail) use ($suratId) {
+                    $activeLeaveQuery = Surat::where('jenis_surat', 'cuti')
                         ->where('pegawai_id', $value)
-                        ->where('tanggal_selesai_cuti', '>=', now()->toDateString())
-                        ->exists();
+                        ->where('tanggal_selesai_cuti', '>=', now()->toDateString());
 
-                    if ($activeLeave) {
-                        $fail('Pegawai yang dipilih sudah memiliki surat cuti yang masih aktif.');
+                    if ($suratId) {
+                        $activeLeaveQuery->where('id', '!=', $suratId);
+                    }
+
+                    if ($activeLeaveQuery->exists()) {
+                        $fail('Pegawai yang dipilih sudah memiliki surat cuti lain yang masih aktif.');
                     }
                 },
             ],

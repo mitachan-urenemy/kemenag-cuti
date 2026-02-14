@@ -18,6 +18,7 @@ class Surat extends Model
      */
     protected $fillable = [
         // Common fields
+        'pegawai_id',
         'nomor_surat',
         'jenis_surat',
         'tanggal_surat',
@@ -54,12 +55,12 @@ class Surat extends Model
     ];
 
     /**
-     * The pegawais that belong to the Surat.
-     * (Pegawai yang dituju oleh surat ini)
+     * Get the pegawai associated with the Surat.
+     * (Pegawai yang dituju oleh surat ini - dimutasi dari ManyToMany ke BelongsTo)
      */
-    public function pegawais(): BelongsToMany
+    public function pegawai(): BelongsTo
     {
-        return $this->belongsToMany(Pegawai::class, 'pegawai_surat');
+        return $this->belongsTo(Pegawai::class);
     }
 
     /**

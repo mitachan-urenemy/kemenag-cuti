@@ -39,9 +39,9 @@ class Pegawai extends Model
      * The surats that belong to the Pegawai.
      * (Surat Cuti / Surat Tugas yang ditujukan untuk pegawai ini)
      */
-    public function surats(): BelongsToMany
+    public function surats(): HasMany
     {
-        return $this->belongsToMany(Surat::class, 'pegawai_surat');
+        return $this->hasMany(Surat::class);
     }
 
     /**
