@@ -11,7 +11,7 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Times New Roman', Times, serif;
             font-size: 11pt;
             line-height: 1.5;
             color: #000;
@@ -45,17 +45,16 @@
             }
         }
 
-        /* Styling specifically to match the provided screenshots */
         .header-peraturan {
             text-align: center;
             font-weight: bold;
-            margin-bottom: 10px; /* Reduced from 20px */
+            margin-bottom: 10px;
         }
 
         .kop-surat {
             text-align: right;
             font-size: 9pt;
-            margin-bottom: 10px; /* Reduced from 30px */
+            margin-bottom: 10px;
             line-height: 1.2;
         }
 
@@ -66,29 +65,29 @@
         }
 
         .content {
-            margin-top: 20px; /* Reduced from 40px */
+            margin-top: 20px;
         }
 
         .nomor-surat {
             text-align: center;
-            margin: 15px 0; /* Reduced from 20px */
+            margin: 15px 0;
             font-weight: bold;
             text-transform: uppercase;
         }
 
         .body-text {
             text-align: justify;
-            margin: 5px 0; /* Reduced from 10px */
+            margin: 5px 0;
         }
 
         .data-pegawai {
             margin-left: 0;
-            margin-bottom: 15px; /* Reduced from 20px */
+            margin-bottom: 15px;
         }
 
         .data-row {
             display: flex;
-            margin-bottom: 3px; /* Reduced from 5px */
+            margin-bottom: 3px;
         }
 
         .data-label {
@@ -107,20 +106,21 @@
         }
 
         .ketentuan {
-            margin: 15px 0; /* Reduced from 20px */
+            margin: 15px 0;
             text-align: justify;
         }
 
         .ketentuan-intro {
-            margin-bottom: 5px; /* Reduced from 10px */
+            margin-bottom: 5px;
         }
 
         .ketentuan-list {
             margin-left: 20px;
+            text-align: justify;
         }
 
         .ketentuan-item {
-            margin-bottom: 3px; /* Reduced from 5px */
+            margin-bottom: 3px;
             display: flex;
         }
 
@@ -130,7 +130,7 @@
         }
 
         .ttd {
-            margin-top: 30px; /* Reduced from 50px */
+            margin-top: 30px;
             text-align: right;
         }
 
@@ -146,7 +146,7 @@
         <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;"> <!-- Reduced from 40px -->
             <div style="text-align: left; font-size: 10pt; width: 300px;">
                 @php
-                    $statusPegawai = $surat->pegawai->status_pegawai ?? 'PNS';
+                    $statusPegawai = $surat->status_pegawai ?? 'PNS';
                 @endphp
 
                 @if($statusPegawai === 'PNS')
@@ -166,14 +166,14 @@
         </div>
 
         <div style="text-align: right; margin-bottom: 15px;"> <!-- Reduced from 20px -->
-            Bener Meriah, {{ $tanggal_surat ?? '...' }}
+            Bener Meriah, {{ $surat->tanggal_surat->translatedFormat('d F Y') ?? '...' }}
         </div>
 
         <div style="text-align: center; font-weight: bold; margin-bottom: 5px;">
             <u>SURAT IZIN CUTI {{ strtoupper(str_replace('_', ' ', $surat->jenis_cuti)) }}</u>
         </div>
         <div style="text-align: center; margin-bottom: 20px;"> <!-- Reduced from 30px -->
-            NOMOR : {{ $nomor_surat ?? '...' }}
+            NOMOR : {{ $surat->nomor_surat ?? '...' }}
         </div>
 
         <div style="text-align: justify; margin-bottom: 10px;"> <!-- Reduced from 20px -->
@@ -184,43 +184,76 @@
             <tr>
                 <td style="width: 200px;">Nama</td>
                 <td style="width: 20px;">:</td>
-                <td>{{ $nama ?? '' }}</td>
+                <td>{{ $surat->nama_lengkap_pegawai ?? '' }}</td>
             </tr>
             <tr>
                 <td>NIP</td>
                 <td>:</td>
-                <td>{{ $nip ?? '' }}</td>
+                <td>{{ $surat->nip_pegawai ?? '' }}</td>
             </tr>
             <tr>
                 <td>Pangkat / Golongan Ruang</td>
                 <td>:</td>
-                <td>{{ $pangkat ?? '-' }}</td>
+                <td>{{ $surat->pangkat_golongan_pegawai ?? '-' }}</td>
             </tr>
             <tr>
                 <td>Jabatan</td>
                 <td>:</td>
-                <td>{{ $jabatan ?? '' }}</td>
+                <td>{{ $surat->jabatan_pegawai ?? '' }}</td>
             </tr>
             <tr>
                 <td>Unit Kerja</td>
                 <td>:</td>
-                <td>{{ $unit_kerja ?? '' }}</td>
+                <td>{{ $surat->bidang_seksi_pegawai ?? '' }}</td>
             </tr>
         </table>
 
         <div style="text-align: justify; margin-bottom: 10px;"> <!-- Reduced from 20px -->
-            Selama {{ $lama_cuti ?? '...' }}, terhitung mulai tanggal {{ $tanggal_mulai ?? '...' }} sampai dengan tanggal {{ $tanggal_selesai ?? '...' }}, dengan ketentuan sebagai berikut :
+            Selama {{ $lama_cuti ?? '...' }}, terhitung mulai tanggal {{ $surat->tanggal_mulai_cuti->translatedFormat('d F Y') ?? '...' }} sampai dengan tanggal {{ $surat->tanggal_selesai_cuti->translatedFormat('d F Y') ?? '...' }}, dengan ketentuan sebagai berikut :
         </div>
 
         <div class="ketentuan-list">
-            <div class="ketentuan-item">
-                <div class="bullet">a.</div>
-                <div>Sebelum menjalankan cuti {{ str_replace('_', ' ', $surat->jenis_cuti) }}, wajib menyerahkan pekerjaannya kepada atasan langsungnya atau pejabat lain yang ditunjuk.</div>
-            </div>
-            <div class="ketentuan-item">
-                <div class="bullet">b.</div>
-                <div>Setelah selesai menjalankan cuti {{ str_replace('_', ' ', $surat->jenis_cuti) }}, wajib melaporkan diri kepada atasan langsungnya dan bekerja kembali sebagaimana biasa.</div>
-            </div>
+            @if($surat->jenis_cuti === 'sakit')
+                {{-- Opsi 1: Cuti Sakit --}}
+                <div class="ketentuan-item">
+                    <div class="bullet">a.</div>
+                    <div style="text-align: justify;">Sebelum menjalankan cuti sakit, wajib menyerahkan pekerjaannya kepada pejabat lain yang telah ditunjuk.</div>
+                </div>
+                <div class="ketentuan-item">
+                    <div class="bullet">b.</div>
+                    <div style="text-align: justify;">Setelah selesai menjalankan cuti sakit, wajib melaporkan diri kepada atasan langsungnya dan bekerja kembali sebagaimana biasa.</div>
+                </div>
+
+            @elseif($surat->jenis_cuti === 'melahirkan')
+                {{-- Opsi 2: Cuti Melahirkan --}}
+                <div class="ketentuan-item">
+                    <div class="bullet">a.</div>
+                    <div style="text-align: justify;">Selama menjalankan cuti melahirkan, wajib memberitahukan tugas yang belum terselesaikan kepada atasan.</div>
+                </div>
+                <div class="ketentuan-item">
+                    <div class="bullet">b.</div>
+                    <div style="text-align: justify;">Sebelum menjalankan cuti melahirkan, wajib menyerahkan pekerjaannya kepada pejabat lain yang telah ditunjuk.</div>
+                </div>
+                <div class="ketentuan-item">
+                    <div class="bullet">c.</div>
+                    <div style="text-align: justify;">Setelah selesai menjalankan cuti melahirkan, wajib melaporkan diri kepada atasan langsungnya dan bekerja kembali sebagaimana biasa.</div>
+                </div>
+
+            @else
+                {{-- Opsi 3: Cuti Tahunan, Alasan Penting, Besar / Default --}}
+                <div class="ketentuan-item">
+                    <div class="bullet">a.</div>
+                    <div style="text-align: justify;">Selama menjalankan cuti {{ str_replace('_', ' ', $surat->jenis_cuti) }}, bersedia menjalankan tugas yang sewaktu-waktu diberikan oleh atasan.</div>
+                </div>
+                <div class="ketentuan-item">
+                    <div class="bullet">b.</div>
+                    <div style="text-align: justify;">Sebelum menjalankan cuti {{ str_replace('_', ' ', $surat->jenis_cuti) }}, wajib menyerahkan pekerjaannya kepada pejabat lain yang telah ditunjuk.</div>
+                </div>
+                <div class="ketentuan-item">
+                    <div class="bullet">c.</div>
+                    <div style="text-align: justify;">Setelah selesai menjalankan cuti {{ str_replace('_', ' ', $surat->jenis_cuti) }}, wajib melaporkan diri kepada atasan langsungnya dan bekerja kembali sebagaimana biasa.</div>
+                </div>
+            @endif
         </div>
 
         <div style="text-align: justify; margin-top: 10px; margin-bottom: 30px;"> <!-- Reduced from 50px -->
@@ -229,9 +262,9 @@
 
         <div class="ttd">
             <div class="ttd-content">
-                <div style="text-align: left; margin-bottom: 60px;">{{ $jabatan_kepala ?? 'Kepala' }},</div> <!-- Reduced from 80px -->
-                <div style="text-align: left; font-weight: bold; text-decoration: underline;">{{ $nama_kepala ?? '...' }}</div>
-                <div style="text-align: left;">NIP. {{ $nip_kepala ?? '...' }}</div>
+                <div style="text-align: left; margin-bottom: 60px;">{{ $surat->jabatan_kepala_pegawai ?? 'Kepala' }},</div> <!-- Reduced from 80px -->
+                <div style="text-align: left; font-weight: bold; text-decoration: underline;">{{ $surat->nama_lengkap_kepala_pegawai ?? '...' }}</div>
+                <div style="text-align: left;">NIP. {{ $surat->nip_kepala_pegawai ?? '...' }}</div>
             </div>
         </div>
         @if(!empty($surat->tembusan))
@@ -245,6 +278,7 @@
     @if(request()->has('print'))
     <script>
         window.onload = function() {
+            window.focus();
             window.print();
         }
     </script>

@@ -63,39 +63,4 @@ class ProfileController extends Controller
             'autoClose' => true,
         ]);
     }
-
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $userCount = User::where('id', '<>', $request->user()->id)->count();
-        if ($userCount <= 0) {
-            return Redirect::route('profile.edit')->with('notification', [
-                'type' => 'danger',
-                'title' => 'Gagal Menghapus Akun!',
-                'message' => 'Tidak boleh menghapus akun terakhir.',
-                'autoClose' => true,
-            ]);
-        }
-
-        if ($request->user()->image_path && Storage::disk('public')->exists($request->user()->image_path)) {
-            Storage::disk('public')->delete($request->user()->image_path);
-        }
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
-    }
 }

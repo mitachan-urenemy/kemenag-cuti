@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Carbon\Carbon;
 
 class Surat extends Model
 {
@@ -18,13 +19,22 @@ class Surat extends Model
      */
     protected $fillable = [
         // Common fields
-        'pegawai_id',
         'nomor_surat',
         'jenis_surat',
         'tanggal_surat',
         'perihal',
-        'penandatangan_id',
-        'created_by_user_id',
+
+        // Manual input pegawai & kepala pegawai
+        'nama_lengkap_pegawai',
+        'nip_pegawai',
+        'pangkat_golongan_pegawai',
+        'jabatan_pegawai',
+        'bidang_seksi_pegawai',
+        'status_pegawai',
+
+        'nama_lengkap_kepala_pegawai',
+        'nip_kepala_pegawai',
+        'jabatan_kepala_pegawai',
 
         // Cuti-specific fields
         'jenis_cuti',
@@ -53,31 +63,6 @@ class Surat extends Model
         'tanggal_mulai_tugas' => 'date',
         'tanggal_selesai_tugas' => 'date',
     ];
-
-    /**
-     * Get the pegawai associated with the Surat.
-     * (Pegawai yang dituju oleh surat ini - dimutasi dari ManyToMany ke BelongsTo)
-     */
-    public function pegawai(): BelongsTo
-    {
-        return $this->belongsTo(Pegawai::class);
-    }
-
-    /**
-     * Get the penandatangan (signer) of the Surat.
-     */
-    public function penandatangan(): BelongsTo
-    {
-        return $this->belongsTo(Pegawai::class, 'penandatangan_id');
-    }
-
-    /**
-     * Get the user who created the Surat.
-     */
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id');
-    }
 
     /**
      * Calculate the duration of cuti and remaining cuti.

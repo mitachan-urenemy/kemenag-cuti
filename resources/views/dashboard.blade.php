@@ -1,20 +1,8 @@
 <x-app-layout>
     <div class="space-y-8">
-        {{-- Welcome Header (Hero Style) --}}
-        <div class="relative overflow-hidden bg-gradient-to-br from-green-600 via-green-600 to-emerald-700 rounded-2xl shadow-xl p-8 lg:p-10 text-white">
-            <div class="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl animate-pulse"></div>
-            <div class="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-white opacity-10 rounded-full blur-xl animate-pulse" style="animation-delay: 1s;"></div>
-
-            <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <h2 class="text-3xl lg:text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-green-100">
-                        Selamat Datang, {{ ucfirst(Auth::user()->username) ?? 'Admin' }}!
-                    </h2>
-                    <p class="text-green-100 max-w-2xl text-lg leading-relaxed">
-                        Dashboard Sistem Informasi Kepegawaian Kantor Kementerian Agama Kabupaten Bener Meriah.
-                    </p>
-                </div>
-            </div>
+        <div class="bg-gray-50 rounded-2xl p-8 text-gray-900 shadow-sm">
+            <h2 class="text-2xl font-bold">Selamat Datang, {{ ucfirst(Auth::user()->username) }}!</h2>
+            <p class="text-gray-500">Dashboard Sistem Informasi Kepegawaian Kantor Kemenag Bener Meriah.</p>
         </div>
 
         {{-- Stats & Quick Actions Grid --}}
@@ -22,15 +10,15 @@
             <!-- Surat Tugas Card -->
             <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start mb-6">
-                    <div class="p-3 bg-blue-50 rounded-xl">
-                        <x-lucide-briefcase class="w-6 h-6 text-blue-600" />
+                    <div class="p-3 bg-blue-600 rounded-xl">
+                        <x-lucide-briefcase class="w-6 h-6 text-white" />
                     </div>
                     <span class="text-3xl font-bold text-gray-900">{{ $suratTugasCount }}</span>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Surat Tugas</h3>
                 <p class="text-sm text-gray-500 mb-6">Buat surat perintah tugas untuk pegawai</p>
                 <div class="flex items-center">
-                    <a href="{{ route('surat-tugas.create') }}" class="w-full py-3 bg-blue-50 text-blue-700 rounded-xl font-semibold hover:bg-blue-100 transition-all cursor-pointer flex items-center justify-center gap-2">
+                    <a href="{{ route('surat-tugas.create') }}" class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
                         <x-lucide-plus class="w-5 h-5" />
                         Buat Surat
                     </a>
@@ -40,15 +28,15 @@
             <!-- Surat Cuti Card -->
             <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start mb-6">
-                    <div class="p-3 bg-green-50 rounded-xl">
-                        <x-lucide-file-text class="w-6 h-6 text-green-600" />
+                    <div class="p-3 bg-green-600 rounded-xl">
+                        <x-lucide-file-text class="w-6 h-6 text-white" />
                     </div>
                     <span class="text-3xl font-bold text-gray-900">{{ $suratCutiCount }}</span>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Surat Cuti</h3>
                 <p class="text-sm text-gray-500 mb-6">Buat surat permohonan cuti pegawai</p>
                 <div class="flex items-center">
-                    <a href="{{ route('surat-cuti.create') }}" class="w-full py-3 bg-green-50 text-green-700 rounded-xl font-semibold hover:bg-green-100 transition-all cursor-pointer flex items-center justify-center gap-2">
+                    <a href="{{ route('surat-cuti.create') }}" class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
                         <x-lucide-plus class="w-5 h-5" />
                         Buat Surat
                     </a>
@@ -58,15 +46,15 @@
             <!-- Riwayat Surat Card -->
             <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start mb-6">
-                    <div class="p-3 bg-orange-50 rounded-xl">
-                        <x-lucide-history class="w-6 h-6 text-orange-600" />
+                    <div class="p-3 bg-orange-600 rounded-xl">
+                        <x-lucide-history class="w-6 h-6 text-white" />
                     </div>
                     <span class="text-3xl font-bold text-gray-900">{{ $totalSuratCount }}</span>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Riwayat Surat</h3>
                 <p class="text-sm text-gray-500 mb-6">Lihat daftar semua surat yang telah dibuat</p>
                 <div class="flex items-center">
-                    <a href="{{ route('riwayat-surat') }}" class="w-full py-3 bg-orange-50 text-orange-700 rounded-xl font-semibold hover:bg-orange-100 transition-all cursor-pointer flex items-center justify-center gap-2">
+                    <a href="{{ route('riwayat-surat') }}" class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
                         <x-lucide-history class="w-5 h-5" />
                         Lihat Riwayat
                     </a>
@@ -89,7 +77,7 @@
                             <div>
                                 <h4 class="text-sm font-semibold text-gray-900">{{ $activity->nomor_surat }}</h4>
                                 <p class="text-xs text-gray-500">
-                                    {{ $activity->jenis_surat == 'cuti' ? 'Surat Cuti - ' . $activity->pegawai->nama_lengkap : 'Surat Tugas - ' . $activity->pegawai->nama_lengkap }}
+                                    {{ $activity->jenis_surat == 'cuti' ? 'Surat Cuti - ' . $activity->nama_lengkap_pegawai : 'Surat Tugas - ' . $activity->nama_lengkap_pegawai }}
                                 </p>
                             </div>
                         </div>

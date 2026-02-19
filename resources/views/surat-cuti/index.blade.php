@@ -1,7 +1,6 @@
 <x-app-layout>
     <div class="mx-auto">
         <x-content-card
-            icon="file-text"
             title="Daftar Surat Cuti"
             subtitle="Berikut adalah daftar semua surat cuti yang telah dibuat."
         >
@@ -39,7 +38,12 @@
                                 <span class="font-mono text-sm font-semibold text-indigo-600 tracking-tight" x-text="item.nomor_surat"></span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-600" x-text="item.pegawai_nama"></td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-900" x-text="item.pegawai_nama"></span>
+                                <span class="text-xs text-gray-500" x-text="item.nip_pegawai"></span>
+                            </div>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span
                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ring-1 ring-inset capitalize"
@@ -71,6 +75,18 @@
                                    title="Edit">
                                     <x-lucide-pencil class="w-4 h-4" />
                                 </a>
+                                <button
+                                    @click="$dispatch('open-confirm-modal', {
+                                        title: 'Hapus Surat Cuti?',
+                                        message: 'Apakah Anda yakin ingin menghapus surat cuti ini? Tindakan ini tidak dapat dibatalkan.',
+                                        action: `/surat-cuti/${item.id}`,
+                                        method: 'DELETE'
+                                    })"
+                                    class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                    title="Hapus"
+                                >
+                                    <x-lucide-trash-2 class="w-4 h-4" />
+                                </button>
                             </div>
                         </td>
                     </tr>

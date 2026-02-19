@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pegawai;
 use App\Models\Surat;
 use App\Http\Requests\StoreSuratTugasRequest;
+use App\Http\Requests\UpdateSuratTugasRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +17,9 @@ class SuratTugasController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Surat::where('jenis_surat', 'tugas')->with('pegawai');
+        $today = Carbon::today();
+        $query = Surat::where('jenis_surat', 'tugas')
+            ->whereDate('tanggal_selesai_tugas', '>=', $today);
 
         // Handle search
         if ($request->filled('search')) {
@@ -25,9 +27,8 @@ class SuratTugasController extends Controller
             $query->where(function ($q) use ($searchValue) {
                 $q->where('nomor_surat', 'like', "%{$searchValue}%")
                     ->orWhere('tujuan_tugas', 'like', "%{$searchValue}%")
-                    ->orWhereHas('pegawai', function ($q) use ($searchValue) {
-                        $q->where('nama_lengkap', 'like', "%{$searchValue}%");
-                    });
+                    ->orWhere('nama_lengkap_pegawai', 'like', "%{$searchValue}%")
+                    ->orWhere('nip_pegawai', 'like', "%{$searchValue}%");
             });
         }
 
@@ -36,12 +37,12 @@ class SuratTugasController extends Controller
         $sortDir = $request->input('sort_dir', 'desc');
         $query->orderBy($sortBy, $sortDir);
 
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('limit', 10);
         $surats = $query->paginate($perPage);
 
         // Transform data
         $surats->getCollection()->transform(function ($surat) {
-            $surat->pegawai_nama = $surat->pegawai->nama_lengkap ?? '-';
+            $surat->nama_lengkap_pegawai = $surat->nama_lengkap_pegawai ?? '-';
             return $surat;
         });
 
@@ -62,24 +63,12 @@ class SuratTugasController extends Controller
      */
     public function create()
     {
-        $pegawais = Pegawai::pluck('nama_lengkap', 'id');
-
-        $kepalaPegawai = Pegawai::where('is_kepala', true)
-            ->get()
-            ->mapWithKeys(function ($kepala) {
-                return [
-                    $kepala->id => $kepala->nama_lengkap . ' (' . $kepala->jabatan . ')',
-                ];
-            });
-
-        // Generate Nomor Surat Tugas: Format: B–001/KK.01.1.19/KP.02.3/01/2025
-        // KP.02.3 = Perjalanan Dinas (TETAP)
+        // Generate Nomor Surat Tugas: Format: B–001/KK.01.19/I/KP.02.2/01/2025
         // Prefix B- (DIKEMBALIKAN SESUAI PERMINTAAN USER)
-        $bulan = date('m');
-        $tahun = date('Y');
+        $bulan = Carbon::now()->format('m');
+        $tahun = Carbon::now()->format('Y');
 
-        // Find the last TUGAS letter created this year to determine the sequence
-        // We filter by 'B-' prefix AND 'tugas' type to separate from Cuti
+        // Cari surat terakhir yang dibuat untuk tahun ini
         $lastSurat = Surat::whereYear('tanggal_surat', $tahun)
                         ->where('jenis_surat', 'tugas')
                         ->where('nomor_surat', 'like', 'B-%')
@@ -88,17 +77,16 @@ class SuratTugasController extends Controller
 
         $nextSequence = 1;
         if ($lastSurat) {
-            // Extract the sequence number from format B-XXX/...
+            // Ekstrak nomor surat terakhir dari format B-XXX/...
             if (preg_match('/B-(\d+)\//', $lastSurat->nomor_surat, $matches)) {
                 $nextSequence = intval($matches[1]) + 1;
             }
         }
 
         $nomorUrut = str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
-        // Changed code to KP.02.3 (Perjalanan Dinas Dalam Negeri)
-        $generatedNomorSurat = "B-{$nomorUrut}/KK.01.1.19/KP.02.3/{$bulan}/{$tahun}";
+        $generatedNomorSurat = "B-{$nomorUrut}/KK.01.19/I/KP.02.2/{$bulan}/{$tahun}";
 
-        return view('surat-tugas.create', compact('pegawais', 'kepalaPegawai', 'generatedNomorSurat'));
+        return view('surat-tugas.create', compact('generatedNomorSurat'));
     }
 
     /**
@@ -115,10 +103,20 @@ class SuratTugasController extends Controller
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => $validated['tujuan_tugas'],
                 'created_by_user_id' => $request->user()->id,
-                'pegawai_id' => $validated['pegawai_id'],
-                'penandatangan_id' => $validated['penandatangan_id'],
 
-                // Tugas-specific fields
+                // Manual input pegawai
+                'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],
+                'nip_pegawai' => $validated['nip_pegawai'],
+                'pangkat_golongan_pegawai' => $validated['pangkat_golongan_pegawai'],
+                'jabatan_pegawai' => $validated['jabatan_pegawai'],
+                'bidang_seksi_pegawai' => $validated['bidang_seksi_pegawai'],
+                'status_pegawai' => $validated['status_pegawai'],
+
+                // Manual input penandatangan
+                'nama_lengkap_kepala_pegawai' => $validated['nama_lengkap_kepala_pegawai'],
+                'nip_kepala_pegawai' => $validated['nip_kepala_pegawai'],
+                'jabatan_kepala_pegawai' => $validated['jabatan_kepala_pegawai'],
+
                 'dasar_hukum' => $validated['dasar_hukum'],
                 'tujuan_tugas' => $validated['tujuan_tugas'],
                 'lokasi_tugas' => $validated['lokasi_tugas'],
@@ -129,7 +127,7 @@ class SuratTugasController extends Controller
             return $surat;
         });
 
-        return redirect()->route('surat-tugas.show', ['surat-tugas' => $surat])
+        return redirect()->route('surat-tugas.show', ['surat_tugas' => $surat])
             ->with('notification', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
@@ -142,13 +140,9 @@ class SuratTugasController extends Controller
      */
     public function show(Surat $surat_tugas)
     {
-        // Eager load necessary relationships
-        $surat = $surat_tugas->load('pegawai', 'penandatangan', 'createdBy');
+        $surat = $surat_tugas;
 
         $template = 'surat-tugas.template'; // For now, a single template for Surat Tugas
-
-        $pegawai = $surat->pegawai;
-        $penandatangan = $surat->penandatangan;
 
         $data = [
             'nomor_surat' => $surat->nomor_surat,
@@ -158,10 +152,20 @@ class SuratTugasController extends Controller
             'lokasi_tugas' => $surat->lokasi_tugas,
             'tanggal_mulai_tugas' => Carbon::parse($surat->tanggal_mulai_tugas)->translatedFormat('d F Y'),
             'tanggal_selesai_tugas' => Carbon::parse($surat->tanggal_selesai_tugas)->translatedFormat('d F Y'),
-            'pegawai' => $pegawai, // Pass single object
-            'nama_penandatangan' => $penandatangan->nama_lengkap ?? '',
-            'nip_penandatangan' => $penandatangan->nip ?? '',
-            'jabatan_penandatangan' => $penandatangan->jabatan ?? '',
+
+            // To be compatible with view that expects 'pegawai' object
+            'pegawai' => (object) [
+                'nama_lengkap' => $surat->nama_lengkap_pegawai,
+                'nip' => $surat->nip_pegawai,
+                'pangkat_golongan' => $surat->pangkat_golongan_pegawai,
+                'jabatan' => $surat->jabatan_pegawai,
+                'bidang_seksi' => $surat->bidang_seksi_pegawai,
+                'status_pegawai' => $surat->status_pegawai,
+            ],
+
+            'nama_penandatangan' => $surat->nama_lengkap_kepala_pegawai ?? '',
+            'nip_penandatangan' => $surat->nip_kepala_pegawai ?? '',
+            'jabatan_penandatangan' => $surat->jabatan_kepala_pegawai ?? '',
             'surat' => $surat, // Pass the original object for templates that need it
         ];
 
@@ -182,25 +186,13 @@ class SuratTugasController extends Controller
      */
     public function edit(Surat $surat_tugas)
     {
-        $surat_tugas->load('pegawai'); // Eager load related pegawai
-
-        $pegawais = Pegawai::pluck('nama_lengkap', 'id');
-
-        $kepalaPegawai = Pegawai::where('is_kepala', true)
-            ->get()
-            ->mapWithKeys(function ($kepala) {
-                return [
-                    $kepala->id => $kepala->nama_lengkap . ' (' . $kepala->jabatan . ')',
-                ];
-            });
-
-        return view('surat-tugas.edit', compact('surat_tugas', 'pegawais', 'kepalaPegawai'));
+        return view('surat-tugas.edit', compact('surat_tugas'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(StoreSuratTugasRequest $request, Surat $surat_tugas)
+    public function update(UpdateSuratTugasRequest $request, Surat $surat_tugas)
     {
         $validated = $request->validated();
 
@@ -208,8 +200,20 @@ class SuratTugasController extends Controller
             $surat_tugas->update([
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => $validated['tujuan_tugas'],
-                'pegawai_id' => $validated['pegawai_id'],
-                'penandatangan_id' => $validated['penandatangan_id'],
+
+                // Manual input pegawai
+                'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],
+                'nip_pegawai' => $validated['nip_pegawai'],
+                'pangkat_golongan_pegawai' => $validated['pangkat_golongan_pegawai'],
+                'jabatan_pegawai' => $validated['jabatan_pegawai'],
+                'bidang_seksi_pegawai' => $validated['bidang_seksi_pegawai'],
+                'status_pegawai' => $validated['status_pegawai'],
+
+                // Manual input penandatangan
+                'nama_lengkap_kepala_pegawai' => $validated['nama_lengkap_kepala_pegawai'],
+                'nip_kepala_pegawai' => $validated['nip_kepala_pegawai'],
+                'jabatan_kepala_pegawai' => $validated['jabatan_kepala_pegawai'],
+
                 'dasar_hukum' => $validated['dasar_hukum'],
                 'tujuan_tugas' => $validated['tujuan_tugas'],
                 'lokasi_tugas' => $validated['lokasi_tugas'],
