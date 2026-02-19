@@ -5,25 +5,11 @@ Project KemenagCuti {
 
 Table users {
   id integer [primary key, increment]
-  pegawai_id integer [note: 'Foreign Key to pegawais']
   username string [unique]
   email string [unique, null]
   image_path string [null]
   password string
   remember_token string [null]
-  created_at timestamp
-  updated_at timestamp
-}
-
-Table pegawais {
-  id integer [primary key, increment]
-  nama_lengkap string
-  nip string [unique, null]
-  pangkat_golongan string [null]
-  jabatan string
-  bidang_seksi string [null]
-  status_pegawai enum('PNS', 'PPPK') [note: 'Employment status']
-  is_kepala boolean [default: false, note: 'True if this employee is a department head or official']
   created_at timestamp
   updated_at timestamp
 }
@@ -36,9 +22,20 @@ Table surats {
   perihal string
 
   // Foreign Keys
-  pegawai_id integer [note: 'Pegawai yang dituju (Pemohon Cuti / Petugas)']
-  penandatangan_id integer [note: 'Pejabat yang menandatangani']
   created_by_user_id integer [note: 'Operator yang membuat surat']
+
+  // Snapshot Data Pegawai
+  nama_lengkap_pegawai string [null]
+  nip_pegawai string [null]
+  pangkat_golongan_pegawai string [null]
+  jabatan_pegawai string [null]
+  bidang_seksi_pegawai string [null]
+  status_pegawai enum('PNS', 'PPPK') [default: 'PNS']
+
+  // Snapshot Data Penandatangan
+  nama_lengkap_kepala_pegawai string [null]
+  nip_kepala_pegawai string [null]
+  jabatan_kepala_pegawai string [null]
 
   // Cuti Specific
   jenis_cuti enum('tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar') [null]
@@ -73,8 +70,7 @@ Table sessions {
   last_activity integer
 }
 
-Ref: users.pegawai_id > pegawais.id [delete: set null]
-Ref: surats.pegawai_id > pegawais.id [delete: cascade]
-Ref: surats.penandatangan_id > pegawais.id [delete: set null]
+
+
 Ref: surats.created_by_user_id > users.id [delete: cascade]
 Ref: sessions.user_id > users.id

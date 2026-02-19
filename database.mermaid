@@ -1,30 +1,11 @@
 erDiagram
-    PEGAWAIS ||--o{ USERS : "pegawai_id (FK)"
-    PEGAWAIS ||--o{ SURATS : "pegawai_id (Target)"
-    PEGAWAIS ||--o{ SURATS : "penandatangan_id (Signer)"
-    USERS ||--|{ SURATS : "created_by_user_id (Creator)"
-    USERS ||--o{ SESSIONS : "user_id (FK)"
-
     USERS {
         int id PK
-        int pegawai_id FK
         string username
         string email
         string image_path
         string password
         string remember_token
-        timestamp created_at
-        timestamp updated_at
-    }
-    PEGAWAIS {
-        int id PK
-        string nama_lengkap
-        string nip
-        string pangkat_golongan
-        string jabatan
-        string bidang_seksi
-        boolean is_kepala
-        enum status_pegawai
         timestamp created_at
         timestamp updated_at
     }
@@ -34,9 +15,16 @@ erDiagram
         enum jenis_surat
         date tanggal_surat
         string perihal
-        int pegawai_id FK
-        int penandatangan_id FK
         int created_by_user_id FK
+        string nama_lengkap_pegawai
+        string nip_pegawai
+        string pangkat_golongan_pegawai
+        string jabatan_pegawai
+        string bidang_seksi_pegawai
+        enum status_pegawai
+        string nama_lengkap_kepala_pegawai
+        string nip_kepala_pegawai
+        string jabatan_kepala_pegawai
         enum jenis_cuti
         date tanggal_mulai_cuti
         date tanggal_selesai_cuti
