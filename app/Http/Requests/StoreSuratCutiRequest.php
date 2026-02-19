@@ -25,27 +25,37 @@ class StoreSuratCutiRequest extends FormRequest
     {
         return [
             'nomor_surat' => ['required', 'string', 'max:255', Rule::unique(Surat::class, 'nomor_surat')],
-            'pegawai_id' => [
+            'nama_lengkap_pegawai' => ['required', 'string', 'max:255'],
+            'nip_pegawai' => [
                 'required',
-                'exists:pegawais,id',
+                'string',
+                'max:50',
                 function ($attribute, $value, $fail) {
                     $activeLeave = Surat::where('jenis_surat', 'cuti')
-                        ->where('pegawai_id', $value)
+                        ->where('nip_pegawai', $value)
                         ->where('tanggal_selesai_cuti', '>=', now()->toDateString())
                         ->exists();
 
                     if ($activeLeave) {
-                        $fail('Pegawai yang dipilih sudah memiliki surat cuti yang masih aktif.');
+                        $fail('Pegawai dengan NIP ini sudah memiliki surat cuti yang masih aktif.');
                     }
                 },
             ],
+            'pangkat_golongan_pegawai' => ['required', 'string', 'max:255'],
+            'jabatan_pegawai' => ['required', 'string', 'max:255'],
+            'bidang_seksi_pegawai' => ['required', 'string', 'max:255'],
+            'status_pegawai' => ['required', 'string', 'in:PNS,PPPK'],
+
+            'nama_lengkap_kepala_pegawai' => ['required', 'string', 'max:255'],
+            'nip_kepala_pegawai' => ['required', 'string', 'max:50'],
+            'jabatan_kepala_pegawai' => ['required', 'string', 'max:255'],
+
             'jenis_cuti' => ['required', Rule::in(['tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar'])],
             'tanggal_surat' => ['required', 'date'],
             'tanggal_mulai_cuti' => ['required', 'date', 'after_or_equal:tanggal_surat'],
             'tanggal_selesai_cuti' => ['required', 'date', 'after_or_equal:tanggal_mulai_cuti'],
             'keterangan_cuti' => ['nullable', 'string', 'max:1000'],
             'tembusan' => ['nullable', 'string', 'max:1000'],
-            'penandatangan_id' => ['required', 'exists:pegawais,id'],
         ];
     }
 }

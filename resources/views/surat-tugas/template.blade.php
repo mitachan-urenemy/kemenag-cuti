@@ -11,13 +11,13 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Times New Roman', Times, serif;
             font-size: 11pt;
             line-height: 1.5;
             color: #000;
             margin: 0;
             padding: 0;
-            background-color: #FAFAFA; /* Light gray background for screen view */
+            background-color: #FAFAFA;
         }
 
         .container {
@@ -175,7 +175,7 @@
 
         <div class="content">
             <div class="judul-surat">SURAT TUGAS</div>
-            <div class="nomor-surat">Nomor : {{ $nomor_surat }}</div>
+            <div class="nomor-surat">Nomor : {{ $surat->nomor_surat }}</div>
 
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                 <tr>
@@ -185,7 +185,7 @@
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr>
                                 <td style="width: 20px; vertical-align: top;">1.</td>
-                                <td style="text-align: justify;">Bahwa dalam rangka {{ $tujuan_tugas ?? '...' }}</td>
+                                <td style="text-align: justify;">Bahwa dalam rangka {{ $surat->tujuan_tugas ?? '...' }}</td>
                             </tr>
                             <tr>
                                 <td style="width: 20px; vertical-align: top;">2.</td>
@@ -208,7 +208,7 @@
                             </tr>
                             <tr>
                                 <td style="width: 20px; vertical-align: top;">2.</td>
-                                <td style="text-align: justify;">Surat Keputusan Kepala Kantor Kementerian Agama Kabupaten Bener Meriah, {{ $dasar_hukum }}</td>
+                                <td style="text-align: justify;">Surat Keputusan Kepala Kantor Kementerian Agama Kabupaten Bener Meriah, {{ $surat->dasar_hukum }}</td>
                             </tr>
                         </table>
                     </td>
@@ -225,17 +225,17 @@
                             <tr>
                                 <td style="width: 100px;">Nama</td>
                                 <td style="width: 20px;">:</td>
-                                <td style="font-weight: bold;">{{ $pegawai->nama_lengkap }}</td>
+                                <td style="font-weight: bold;">{{ $surat->nama_lengkap_pegawai }}</td>
                             </tr>
                             <tr>
                                 <td>NIP</td>
                                 <td>:</td>
-                                <td>{{ $pegawai->nip }}</td>
+                                <td>{{ $surat->nip_pegawai }}</td>
                             </tr>
                             <tr>
                                 <td>Jabatan</td>
                                 <td>:</td>
-                                <td>{{ $pegawai->jabatan }}</td>
+                                <td>{{ $surat->jabatan_pegawai }}</td>
                             </tr>
                         </table>
                     </td>
@@ -247,7 +247,7 @@
                     <td style="width: 100px; vertical-align: top;">Untuk</td>
                     <td style="vertical-align: top; display: flex;">
                         <div style="margin-right: 5px;">:</div>
-                        <div style="text-align: justify;">{{ $tujuan_tugas }} yang akan dilaksanakan pada tanggal {{ $tanggal_mulai_tugas }} s.d {{ $tanggal_selesai_tugas }} bertempat di {{ $lokasi_tugas }}.</div>
+                        <div style="text-align: justify;">{{ $surat->tujuan_tugas }} yang akan dilaksanakan pada tanggal {{ $surat->tanggal_mulai_tugas->translatedFormat('d F Y') }} s.d {{ $surat->tanggal_selesai_tugas->translatedFormat('d F Y') }} bertempat di {{ $surat->lokasi_tugas }}.</div>
                     </td>
                 </tr>
             </table>
@@ -258,10 +258,10 @@
 
             <div class="ttd">
                 <div class="ttd-content">
-                    <div style="margin-bottom: 5px; text-align: left;">Redelong, {{ $tanggal_surat }}</div>
-                    <div class="ttd-jabatan" style="text-align: left;">{{ $jabatan_penandatangan ?? 'Kepala' }}</div>
-                    <div class="ttd-nama" style="text-align: left; margin-top: 60px;">{{ $nama_penandatangan }}</div>
-                    <div class="ttd-nip" style="text-align: left;">NIP. {{ $nip_penandatangan }}</div>
+                    <div style="margin-bottom: 5px; text-align: left;">Redelong, {{ $surat->tanggal_surat->translatedFormat('d F Y') }}</div>
+                    <div class="ttd-jabatan" style="text-align: left;">{{ $surat->jabatan_kepala_pegawai ?? 'Kepala' }}</div>
+                    <div class="ttd-nama" style="text-align: left; margin-top: 60px;">{{ $surat->nama_lengkap_kepala_pegawai }}</div>
+                    <div class="ttd-nip" style="text-align: left;">NIP. {{ $surat->nip_kepala_pegawai }}</div>
                 </div>
             </div>
         </div>
@@ -269,6 +269,7 @@
     @if($trigger_print ?? false)
     <script>
         window.onload = function() {
+            window.focus();
             window.print();
         }
     </script>

@@ -1,9 +1,8 @@
 <x-app-layout>
     <div class="mx-auto">
         <x-content-card
-            icon="briefcase"
             title="Daftar Surat Tugas"
-            subtitle="Berikut adalah daftar semua surat tugas yang telah dibuat."
+            subtitle="Berikut adalah daftar surat tugas yang telah dibuat."
         >
             <x-slot name="action">
                 <a href="{{ route('surat-tugas.create') }}" class="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all cursor-pointer flex items-center gap-2">
@@ -16,7 +15,7 @@
                 url="{{ route('surat-tugas.index') }}"
                 :columns="[
                     'nomor_surat' => 'Nomor Surat',
-                    'pegawai_nama' => 'Pegawai Ditugaskan',
+                    'nama_lengkap_pegawai' => 'Pegawai Ditugaskan',
                     'tujuan_tugas' => 'Tujuan Tugas',
                     'tanggal_surat' => 'Tanggal Surat',
                     'actions' => 'Aksi',
@@ -39,14 +38,26 @@
                                 <span class="font-mono text-sm font-semibold text-indigo-600 tracking-tight" x-text="item.nomor_surat"></span>
                             </div>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-900" x-text="item.nama_lengkap_pegawai"></span>
+                                <span class="text-xs text-gray-500" x-text="item.nip_pegawai"></span>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500" x-text="item.pegawai_nama"></td>
                         <td class="px-6 py-4 text-sm text-gray-500" x-text="item.tujuan_tugas"></td>
                         <td class="px-6 py-4 text-sm text-gray-500" x-text="new Date(item.tanggal_surat).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})"></td>
-                        <td class="px-6 py-4 text-sm font-medium text-right">
+                        <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                             <div class="flex items-center justify-end gap-2">
-                                <a :href="`/surat-tugas/${item.id}`" class="text-indigo-600 hover:text-indigo-900">Lihat</a>
-                                <a :href="`/surat-tugas/${item.id}/edit`" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                <a :href="`/surat-tugas/${item.id}`"
+                                   class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
+                                   title="Lihat Detail">
+                                    <x-lucide-eye class="w-4 h-4" />
+                                </a>
+                                <a :href="`/surat-tugas/${item.id}/edit`"
+                                   class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                                   title="Edit">
+                                    <x-lucide-pencil class="w-4 h-4" />
+                                </a>
                                 <button
                                     @click="$dispatch('open-confirm-modal', {
                                         title: 'Hapus Surat Tugas?',
@@ -54,9 +65,10 @@
                                         action: `/surat-tugas/${item.id}`,
                                         method: 'DELETE'
                                     })"
-                                    class="text-red-600 hover:text-red-900"
+                                    class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                    title="Hapus"
                                 >
-                                    Hapus
+                                    <x-lucide-trash-2 class="w-4 h-4" />
                                 </button>
                             </div>
                         </td>

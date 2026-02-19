@@ -1,26 +1,35 @@
 <x-app-layout>
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- TAMBAHKAN CLASS 'no-print' DI SINI -->
+    <div class="mx-auto">
         <x-content-card
-            icon="file-check"
             title="Detail Surat Cuti"
             subtitle="Surat cuti telah berhasil dibuat. Anda dapat mencetaknya atau mengunduh sebagai PDF."
             class="no-print"
         >
             <x-slot name="action">
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('surat-cuti.index') }}" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-gray-700 uppercase transition-colors duration-200 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200">
-                        <x-lucide-arrow-left class="w-4 h-4" />
-                        Kembali
-                    </a>
+                    @if(request('from') === 'riwayat')
+                        <a href="{{ route('riwayat-surat') }}" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-gray-700 uppercase transition-colors duration-200 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200">
+                            <x-lucide-arrow-left class="w-4 h-4" />
+                            Kembali
+                        </a>
+                    @else
+                        <a href="{{ route('surat-cuti.index') }}" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-gray-700 uppercase transition-colors duration-200 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200">
+                            <x-lucide-arrow-left class="w-4 h-4" />
+                            Kembali
+                        </a>
+                    @endif
 
-
-
-                    <!-- Tombol Cetak -->
-                    <a href="{{ route('surat-cuti.show', [$surat, 'print' => true]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white uppercase transition-colors duration-200 bg-gray-600 border border-transparent rounded-lg hover:bg-gray-700">
+                    <button onclick="printSurat()" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white uppercase transition-colors duration-200 bg-gray-600 border border-transparent rounded-lg hover:bg-gray-700">
                         <x-lucide-printer class="w-4 h-4" />
                         Cetak
-                    </a>
+                    </button>
+                    <iframe id="print-frame" src="" style="position: absolute; width: 0; height: 0; border: none; overflow: hidden;"></iframe>
+                    <script>
+                        function printSurat() {
+                            const frame = document.getElementById('print-frame');
+                            frame.src = "{{ route('surat-cuti.show', [$surat, 'print' => true]) }}";
+                        }
+                    </script>
                 </div>
             </x-slot>
 

@@ -21,8 +21,7 @@ class DashboardController extends Controller
         $suratTugasCount = Surat::where('jenis_surat', 'tugas')->count();
         $totalSuratCount = Surat::count();
 
-        $recentActivities = Surat::with('pegawai')
-            ->latest()
+        $recentActivities = Surat::latest()
             ->take(5)
             ->get();
 

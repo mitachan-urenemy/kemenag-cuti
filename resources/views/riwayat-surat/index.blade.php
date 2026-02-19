@@ -1,7 +1,6 @@
 <x-app-layout>
     <div class="mx-auto">
         <x-content-card
-            icon="history"
             title="Riwayat Surat"
             subtitle="Daftar semua surat yang telah dibuat dalam sistem."
             :padding="false"
@@ -156,8 +155,9 @@
 
                         <!-- Pegawai (dengan Avatar Inisial) -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
+                            <div class="flex flex-col">
                                 <div class="text-sm font-medium text-gray-900" x-text="item.pegawai_nama"></div>
+                                <div class="text-xs text-gray-500" x-text="item.pegawai?.nip ?? item.nip_pegawai"></div>
                             </div>
                         </td>
 
@@ -179,14 +179,35 @@
                         </td>
 
                         <!-- Aksi -->
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                                <!-- View -->
-                                <a :href="item.jenis_surat === 'cuti' ? `/surat-cuti/${item.id}` : `/surat-tugas/${item.id}`"
-                                class="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-all duration-200"
-                                title="Lihat Detail">
-                                    <x-lucide-eye class="w-5 h-5" />
+                        <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                {{-- View --}}
+                                <a :href="item.jenis_surat === 'cuti' ? `/surat-cuti/${item.id}?from=riwayat` : `/surat-tugas/${item.id}?from=riwayat`"
+                                   class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
+                                   title="Lihat Detail">
+                                    <x-lucide-eye class="w-4 h-4" />
                                 </a>
+
+                                {{-- Edit --}}
+                                <a :href="item.jenis_surat === 'cuti' ? `/surat-cuti/${item.id}/edit?from=riwayat` : `/surat-tugas/${item.id}/edit?from=riwayat`"
+                                   class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                                   title="Edit">
+                                    <x-lucide-pencil class="w-4 h-4" />
+                                </a>
+
+                                {{-- Delete --}}
+                                <button
+                                    @click="$dispatch('open-confirm-modal', {
+                                        title: 'Hapus Surat?',
+                                        message: 'Apakah Anda yakin ingin menghapus surat ini? Tindakan ini tidak dapat dibatalkan.',
+                                        action: item.jenis_surat === 'cuti' ? `/surat-cuti/${item.id}` : `/surat-tugas/${item.id}`,
+                                        method: 'DELETE'
+                                    })"
+                                    class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                    title="Hapus"
+                                >
+                                    <x-lucide-trash-2 class="w-4 h-4" />
+                                </button>
                             </div>
                         </td>
                     </tr>

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pegawai;
+
 use App\Models\Surat;
 use App\Http\Requests\StoreSuratCutiRequest;
 use App\Http\Requests\UpdateSuratCutiRequest; // Import the new Request
@@ -20,8 +20,7 @@ class SuratCutiController extends Controller
     {
         $today = Carbon::today();
         $query = Surat::where('jenis_surat', 'cuti')
-            ->whereDate('tanggal_selesai_cuti', '>=', $today)
-            ->with('pegawai');
+            ->whereDate('tanggal_selesai_cuti', '>=', $today);
 
         // Handle search
         if ($request->filled('search')) {
@@ -29,9 +28,8 @@ class SuratCutiController extends Controller
             $query->where(function ($q) use ($searchValue) {
                 $q->where('nomor_surat', 'like', "%{$searchValue}%")
                     ->orWhere('jenis_cuti', 'like', "%{$searchValue}%")
-                    ->orWhereHas('pegawai', function ($q) use ($searchValue) {
-                        $q->where('nama_lengkap', 'like', "%{$searchValue}%");
-                    });
+                    ->orWhere('nama_lengkap_pegawai', 'like', "%{$searchValue}%")
+                    ->orWhere('nip_pegawai', 'like', "%{$searchValue}%");
             });
         }
 
@@ -40,27 +38,19 @@ class SuratCutiController extends Controller
         $sortDir = $request->input('sort_dir', 'desc');
         $query->orderBy($sortBy, $sortDir);
 
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('limit', 10);
         $surats = $query->paginate($perPage);
 
         // Transform data
         $surats->getCollection()->transform(function ($surat) {
-            $pegawai = $surat->pegawai;
+            $cuti = $surat->hitungCuti(
+                $surat->tanggal_mulai_cuti,
+                $surat->tanggal_selesai_cuti
+            );
 
-            if ($pegawai) {
-                $cuti = $pegawai->hitungCuti(
-                    $surat->tanggal_mulai_cuti,
-                    $surat->tanggal_selesai_cuti
-                );
-
-                $surat->pegawai_nama = $pegawai->nama_lengkap;
-                $surat->status_cuti = $cuti['status'];       // BELUM_DIMULAI | SEDANG_CUTI
-                $surat->sisa_cuti = $cuti['sisa_cuti'];      // countdown
-            } else {
-                $surat->pegawai_nama = 'N/A';
-                $surat->status_cuti = null;
-                $surat->sisa_cuti = null;
-            }
+            $surat->pegawai_nama = $surat->nama_lengkap_pegawai;
+            $surat->status_cuti = $cuti['status'];       // BELUM_DIMULAI | SEDANG_CUTI
+            $surat->sisa_cuti = $cuti['sisa_cuti'];      // countdown
 
             return $surat;
         });
@@ -93,16 +83,6 @@ class SuratCutiController extends Controller
      */
     public function create()
     {
-        $pegawais = Pegawai::pluck('nama_lengkap', 'id');
-
-        $kepalaPegawai = Pegawai::where('is_kepala', true)
-            ->get()
-            ->mapWithKeys(function ($kepala) {
-                return [
-                    $kepala->id => $kepala->nama_lengkap . ' (' . $kepala->jabatan . ')',
-                ];
-            });
-
         // Generate Nomor Surat Cuti: Format: B–001/KK.01.1.19/KP.08.2/01/2025
         $bulan = date('m');
         $tahun = date('Y');
@@ -126,7 +106,7 @@ class SuratCutiController extends Controller
         $nomorUrut = str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
         $generatedNomorSurat = "B-{$nomorUrut}/KK.01.1.19/KP.08.2/{$bulan}/{$tahun}";
 
-        return view('surat-cuti.create', compact('pegawais', 'kepalaPegawai', 'generatedNomorSurat'));
+        return view('surat-cuti.create', compact('generatedNomorSurat'));
     }
 
     /**
@@ -143,8 +123,20 @@ class SuratCutiController extends Controller
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => 'Permohonan cuti ' . ucfirst($validated['jenis_cuti']),
                 'created_by_user_id' => $request->user()->id,
-                'pegawai_id' => $validated['pegawai_id'],
-                'penandatangan_id' => $validated['penandatangan_id'],
+
+                // Manual input pegawai
+                'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],
+                'nip_pegawai' => $validated['nip_pegawai'],
+                'pangkat_golongan_pegawai' => $validated['pangkat_golongan_pegawai'],
+                'jabatan_pegawai' => $validated['jabatan_pegawai'],
+                'bidang_seksi_pegawai' => $validated['bidang_seksi_pegawai'],
+                'status_pegawai' => $validated['status_pegawai'],
+
+                // Manual input penandatangan
+                'nama_lengkap_kepala_pegawai' => $validated['nama_lengkap_kepala_pegawai'],
+                'nip_kepala_pegawai' => $validated['nip_kepala_pegawai'],
+                'jabatan_kepala_pegawai' => $validated['jabatan_kepala_pegawai'],
+
                 'jenis_cuti' => $validated['jenis_cuti'],
                 'tanggal_mulai_cuti' => $validated['tanggal_mulai_cuti'],
                 'tanggal_selesai_cuti' => $validated['tanggal_selesai_cuti'],
@@ -168,13 +160,9 @@ class SuratCutiController extends Controller
      */
     public function show(Surat $surat_cuti)
     {
-        // The main variable is $surat_cuti, but we'll call it $surat for consistency in the logic below
-        $surat = $surat_cuti->load('pegawai', 'penandatangan', 'createdBy');
+        $surat = $surat_cuti;
 
         $template = 'surat-cuti.template';
-
-        $pegawai = $surat->pegawai;
-        $penandatangan = $surat->penandatangan;
 
         // Calculate duration
         $lama_cuti_str = '';
@@ -188,17 +176,21 @@ class SuratCutiController extends Controller
         $data = [
             'nomor_surat' => $surat->nomor_surat,
             'tanggal_surat' => Carbon::parse($surat->tanggal_surat)->translatedFormat('d F Y'),
-            'nama' => $pegawai->nama_lengkap ?? '',
-            'nip' => $pegawai->nip ?? '',
-            'pangkat' => $pegawai->pangkat_golongan ?? '',
-            'jabatan' => $pegawai->jabatan ?? '',
-            'unit_kerja' => $pegawai->bidang_seksi ?? 'Kantor Kementerian Agama Kabupaten Bener Meriah',
+
+            'nama' => $surat->nama_lengkap_pegawai ?? '',
+            'nip' => $surat->nip_pegawai ?? '',
+            'pangkat' => $surat->pangkat_golongan_pegawai ?? '',
+            'jabatan' => $surat->jabatan_pegawai ?? '',
+            'unit_kerja' => $surat->bidang_seksi_pegawai ?? 'Kantor Kementerian Agama Kabupaten Bener Meriah',
+
             'lama_cuti' => $lama_cuti_str,
             'tanggal_mulai' => Carbon::parse($surat->tanggal_mulai_cuti)->translatedFormat('d F Y'),
             'tanggal_selesai' => Carbon::parse($surat->tanggal_selesai_cuti)->translatedFormat('d F Y'),
-            'nama_kepala' => $penandatangan->nama_lengkap ?? 'Kepala Dinas',
-            'nip_kepala' => $penandatangan->nip ?? '',
-            'jabatan_kepala' => $penandatangan->jabatan ?? '',
+
+            'nama_kepala' => $surat->nama_lengkap_kepala_pegawai ?? 'Kepala Dinas',
+            'nip_kepala' => $surat->nip_kepala_pegawai ?? '',
+            'jabatan_kepala' => $surat->jabatan_kepala_pegawai ?? '',
+
             'surat' => $surat,
         ];
 
@@ -219,19 +211,7 @@ class SuratCutiController extends Controller
      */
     public function edit(Surat $surat_cuti)
     {
-        $surat_cuti->load('pegawai'); // Eager load related pegawai
-
-        $pegawais = Pegawai::pluck('nama_lengkap', 'id');
-
-        $kepalaPegawai = Pegawai::where('is_kepala', true)
-            ->get()
-            ->mapWithKeys(function ($kepala) {
-                return [
-                    $kepala->id => $kepala->nama_lengkap . ' (' . $kepala->jabatan . ')',
-                ];
-            });
-
-        return view('surat-cuti.edit', compact('surat_cuti', 'pegawais', 'kepalaPegawai'));
+        return view('surat-cuti.edit', compact('surat_cuti'));
     }
 
     /**
@@ -245,8 +225,20 @@ class SuratCutiController extends Controller
             $surat_cuti->update([
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => 'Permohonan cuti ' . ucfirst($validated['jenis_cuti']),
-                'pegawai_id' => $validated['pegawai_id'],
-                'penandatangan_id' => $validated['penandatangan_id'],
+
+                // Manual input pegawai
+                'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],
+                'nip_pegawai' => $validated['nip_pegawai'],
+                'pangkat_golongan_pegawai' => $validated['pangkat_golongan_pegawai'],
+                'jabatan_pegawai' => $validated['jabatan_pegawai'],
+                'bidang_seksi_pegawai' => $validated['bidang_seksi_pegawai'],
+                'status_pegawai' => $validated['status_pegawai'],
+
+                // Manual input penandatangan
+                'nama_lengkap_kepala_pegawai' => $validated['nama_lengkap_kepala_pegawai'],
+                'nip_kepala_pegawai' => $validated['nip_kepala_pegawai'],
+                'jabatan_kepala_pegawai' => $validated['jabatan_kepala_pegawai'],
+
                 'jenis_cuti' => $validated['jenis_cuti'],
                 'tanggal_mulai_cuti' => $validated['tanggal_mulai_cuti'],
                 'tanggal_selesai_cuti' => $validated['tanggal_selesai_cuti'],
@@ -268,6 +260,11 @@ class SuratCutiController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        Surat::destroy($id);
+        return redirect()->route('surat-cuti.index')->with('notification', [
+            'type' => 'success',
+            'title' => 'Dihapus!',
+            'message' => 'Surat cuti telah berhasil dihapus.'
+        ]);
     }
 }

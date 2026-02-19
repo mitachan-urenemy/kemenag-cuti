@@ -4,9 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-use Illuminate\Validation\Rule;
-
-class StoreSuratTugasRequest extends FormRequest
+class UpdateSuratTugasRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +22,7 @@ class StoreSuratTugasRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nomor_surat' => ['required', 'string', 'max:255', Rule::unique('surats', 'nomor_surat')],
+            // nomor_surat is not editable in update view
 
             'nama_lengkap_pegawai' => ['required', 'string', 'max:255'],
             'nip_pegawai' => ['required', 'string', 'max:50'],

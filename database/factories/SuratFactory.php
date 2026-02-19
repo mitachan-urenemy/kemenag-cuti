@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Pegawai;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,9 +21,16 @@ class SuratFactory extends Factory
             'jenis_surat' => fake()->randomElement(['cuti', 'tugas']),
             'tanggal_surat' => fake()->date(),
             'perihal' => fake()->sentence(),
-            'pegawai_id' => Pegawai::factory(),
-            'penandatangan_id' => Pegawai::factory(),
-            'created_by_user_id' => User::factory(),
+            'nama_lengkap_pegawai' => fake()->name(),
+            'nip_pegawai' => fake()->bothify('###########'),
+            'pangkat_golongan_pegawai' => fake()->randomElement(['III/a', 'III/b', 'III/c', 'III/d', 'IV/a', 'IV/b', 'IV/c', 'IV/d']),
+            'jabatan_pegawai' => fake()->jobTitle(),
+            'bidang_seksi_pegawai' => fake()->city(),
+            'status_pegawai' => fake()->randomElement(['PNS', 'PPPK']),
+
+            'nama_lengkap_kepala_pegawai' => fake()->name(),
+            'nip_kepala_pegawai' => fake()->bothify('###########'),
+            'jabatan_kepala_pegawai' => fake()->jobTitle(),
         ];
     }
 
@@ -56,8 +61,8 @@ class SuratFactory extends Factory
     public function tugas(): static
     {
         return $this->state(function (array $attributes) {
-            $startDate = fake()->dateTimeBetween('now', '+1 month');
-            $endDate = (clone $startDate)->modify('+' . fake()->numberBetween(1, 3) . ' days');
+            $startDate = fake()->dateTimeBetween('-1 month', '+1 month');
+            $endDate = (clone $startDate)->modify('+' . fake()->numberBetween(1, 4) . ' days');
 
             return [
                 'jenis_surat' => 'tugas',

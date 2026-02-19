@@ -19,17 +19,15 @@ class RiwayatSuratController extends Controller
 
         // Jika request adalah AJAX (untuk DataTable)
         if ($request->wantsJson()) {
-            $query = Surat::with('pegawai', 'penandatangan');
+            $query = Surat::query();
 
             // Search - cari di nomor surat, perihal, atau nama pegawai
             if ($search = $request->input('search')) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nomor_surat', 'like', "%{$search}%")
                         ->orWhere('perihal', 'like', "%{$search}%")
-                        ->orWhereHas('pegawai', function ($q_pegawai) use ($search) {
-                            $q_pegawai->where('nama_lengkap', 'like', "%{$search}%")
-                                     ->orWhere('nip', 'like', "%{$search}%");
-                        });
+                        ->orWhere('nama_lengkap_pegawai', 'like', "%{$search}%")
+                        ->orWhere('nip_pegawai', 'like', "%{$search}%");
                 });
             }
 
@@ -48,17 +46,12 @@ class RiwayatSuratController extends Controller
                 }
             }
 
-            // Filter by status_pegawai (PNS/PPPK)
+            // Filter by status_pegawai (PNS/PPPK) - Menggunakan kolom snapshot di tabel surat
             if ($statusPegawai = $request->input('status_pegawai')) {
                 if (in_array($statusPegawai, ['PNS', 'PPPK'])) {
-                    $query->whereHas('pegawai', function ($q) use ($statusPegawai) {
-                        $q->where('status_pegawai', $statusPegawai);
-                    });
+                    $query->where('status_pegawai', $statusPegawai);
                 }
             }
-
-            // Count total records before pagination
-            $total = $query->count();
 
             // Sorting
             $allowedSortColumns = ['nomor_surat', 'jenis_surat', 'tanggal_surat', 'created_at'];
@@ -74,19 +67,19 @@ class RiwayatSuratController extends Controller
                 $query->orderBy('tanggal_surat', 'desc')->orderBy('created_at', 'desc');
             }
 
-            // Manual pagination
+            // Pagination
             $limit = $request->input('limit', 10);
-            $offset = $request->input('offset', 0);
-            $data = $query->limit($limit)->offset($offset)->get();
+            $surats = $query->paginate($limit);
 
             // Parse data to add custom attributes
-            $data->each(function ($surat) {
-                $surat->pegawai_nama = $surat->pegawai->nama_lengkap ?? '-';
+            $surats->getCollection()->transform(function ($surat) {
+                $surat->pegawai_nama = $surat->nama_lengkap_pegawai ?? '-';
+                return $surat;
             });
 
             return response()->json([
-                'data' => $data,
-                'total' => $total,
+                'data' => $surats->items(),
+                'total' => $surats->total(),
             ]);
         }
 

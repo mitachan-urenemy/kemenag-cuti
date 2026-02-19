@@ -48,20 +48,4 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
-    /**
-     * Get the pegawai that owns the User.
-     */
-    public function pegawai(): BelongsTo
-    {
-        return $this->belongsTo(Pegawai::class);
-    }
-
-    /**
-     * Get the surats created by the User.
-     */
-    public function surats(): HasMany
-    {
-        return $this->hasMany(Surat::class, 'created_by_user_id');
-    }
 }
