@@ -54,6 +54,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('surats');
-        Schema::dropIfExists('kop_surats');
     }
 };

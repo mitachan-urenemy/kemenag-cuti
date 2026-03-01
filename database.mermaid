@@ -15,7 +15,6 @@ erDiagram
         enum jenis_surat
         date tanggal_surat
         string perihal
-        int created_by_user_id FK
         string nama_lengkap_pegawai
         string nip_pegawai
         string pangkat_golongan_pegawai
@@ -29,12 +28,12 @@ erDiagram
         date tanggal_mulai_cuti
         date tanggal_selesai_cuti
         text keterangan_cuti
+        text tembusan
         text dasar_hukum
         text tujuan_tugas
         string lokasi_tugas
         date tanggal_mulai_tugas
         date tanggal_selesai_tugas
-        text tembusan
         timestamp created_at
         timestamp updated_at
     }
