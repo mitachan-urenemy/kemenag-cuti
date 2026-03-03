@@ -18,6 +18,7 @@
                     'tanggal_surat' => 'Tanggal Surat',
                     'perihal' => 'Perihal',
                     'jenis_cuti' => 'Jenis Cuti',
+                    'created_by_name' => 'Operator',
                     'actions' => 'Aksi',
                 ]"
             >
@@ -25,6 +26,7 @@
                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Nomor Surat</th>
                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Pegawai</th>
                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Jenis Cuti</th>
+                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Operator</th>
                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Tanggal</th>
                     <th scope="col" class="relative px-6 py-3">
                         <span class="sr-only">Actions</span>
@@ -56,6 +58,9 @@
                                 }"
                                 x-text="item.jenis_cuti.replace('_', ' ')"
                             ></span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800" x-text="item.created_by_name"></span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
                             <div class="flex items-center gap-1.5">

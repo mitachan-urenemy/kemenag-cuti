@@ -112,6 +112,9 @@
                         </div>
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Operator
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Perihal
                     </th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
@@ -171,6 +174,11 @@
                                     year: 'numeric'
                                 })"></span>
                             </div>
+                        </td>
+
+                        <!-- Operator -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800" x-text="item.created_by_name"></span>
                         </td>
 
                         <!-- Perihal -->

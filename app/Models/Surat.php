@@ -19,6 +19,7 @@ class Surat extends Model
      */
     protected $fillable = [
         // Common fields
+        'user_id',
         'nomor_surat',
         'jenis_surat',
         'tanggal_surat',
@@ -63,6 +64,11 @@ class Surat extends Model
         'tanggal_mulai_tugas' => 'date',
         'tanggal_selesai_tugas' => 'date',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Calculate the duration of cuti and remaining cuti.

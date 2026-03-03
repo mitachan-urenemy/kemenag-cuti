@@ -1,0 +1,29 @@
+flowchart TD
+    Start([Mulai]) --> Login{Login?}
+    Login -- Tidak --> Auth[Halaman Login] --> Login
+    Login -- Ya --> Dashboard[Dashboard]
+
+    Dashboard --> Menu{Pilih Menu}
+    Menu -->|Surat Cuti| ListCuti[Daftar Surat Cuti]
+    Menu -->|Surat Tugas| ListTugas[Daftar Surat Tugas]
+    Menu -->|Riwayat| ListRiwayat[Riwayat Surat]
+
+    ListCuti --> CreateCuti[Klik 'Buat Surat Cuti']
+    ListTugas --> CreateTugas[Klik 'Buat Surat Tugas']
+
+    CreateCuti --> FormCuti[Isi Form: Snapshot Data Pegawai & Penandatangan + Detail Cuti]
+    CreateTugas --> FormTugas[Isi Form: Snapshot Data Pegawai & Penandatangan + Detail Tugas]
+
+    FormCuti --> Submit[Submit / Simpan]
+    FormTugas --> Submit
+
+    Submit --> Validate{Validasi?}
+    Validate -- Tidak --> ShowError[Tampilkan Error Validasi] --> FormCuti
+    Validate -- Ya --> SaveDB[Simpan ke database tabel 'surats']
+
+    SaveDB --> ShowDetail[Halaman Detail Surat]
+
+    ShowDetail --> Action{Aksi?}
+    Action -->|Edit| EditForm[Edit Data - Snapshot Baru] --> Submit
+    Action -->|Print| Print[Cetak via Hidden Iframe] --> Done([Selesai])
+    Action -->|Kembali| ListRiwayat

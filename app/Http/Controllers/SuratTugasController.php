@@ -18,7 +18,7 @@ class SuratTugasController extends Controller
     public function index(Request $request)
     {
         $today = Carbon::today();
-        $query = Surat::where('jenis_surat', 'tugas')
+        $query = Surat::with('user')->where('jenis_surat', 'tugas')
             ->whereDate('tanggal_selesai_tugas', '>=', $today);
 
         // Handle search
@@ -43,6 +43,7 @@ class SuratTugasController extends Controller
         // Transform data
         $surats->getCollection()->transform(function ($surat) {
             $surat->nama_lengkap_pegawai = $surat->nama_lengkap_pegawai ?? '-';
+            $surat->created_by_name = $surat->user->username ?? 'System';
             return $surat;
         });
 
@@ -102,7 +103,7 @@ class SuratTugasController extends Controller
                 'nomor_surat' => $validated['nomor_surat'],
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => $validated['tujuan_tugas'],
-                'created_by_user_id' => $request->user()->id,
+                'user_id' => $request->user()->id,
 
                 // Manual input pegawai
                 'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],

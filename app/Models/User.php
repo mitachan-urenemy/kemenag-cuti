@@ -48,4 +48,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function surats(): HasMany
+    {
+        return $this->hasMany(Surat::class);
+    }
 }

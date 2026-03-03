@@ -14,6 +14,7 @@ return new class extends Migration
         // Tabel utama untuk semua jenis surat (Cuti dan Tugas)
         Schema::create('surats', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('nomor_surat')->unique();
             $table->enum('jenis_surat', ['cuti', 'tugas']);
             $table->date('tanggal_surat');
@@ -54,6 +55,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('surats');
-        Schema::dropIfExists('kop_surats');
     }
 };
