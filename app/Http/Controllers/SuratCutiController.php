@@ -19,7 +19,7 @@ class SuratCutiController extends Controller
     public function index(Request $request)
     {
         $today = Carbon::today();
-        $query = Surat::where('jenis_surat', 'cuti')
+        $query = Surat::with('user')->where('jenis_surat', 'cuti')
             ->whereDate('tanggal_selesai_cuti', '>=', $today);
 
         // Handle search
@@ -51,6 +51,7 @@ class SuratCutiController extends Controller
             $surat->pegawai_nama = $surat->nama_lengkap_pegawai;
             $surat->status_cuti = $cuti['status'];       // BELUM_DIMULAI | SEDANG_CUTI
             $surat->sisa_cuti = $cuti['sisa_cuti'];      // countdown
+            $surat->created_by_name = $surat->user->username ?? 'System';
 
             return $surat;
         });
@@ -122,7 +123,7 @@ class SuratCutiController extends Controller
                 'nomor_surat' => $validated['nomor_surat'],
                 'tanggal_surat' => $validated['tanggal_surat'],
                 'perihal' => 'Permohonan cuti ' . ucfirst($validated['jenis_cuti']),
-                'created_by_user_id' => $request->user()->id,
+                'user_id' => $request->user()->id,
 
                 // Manual input pegawai
                 'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],

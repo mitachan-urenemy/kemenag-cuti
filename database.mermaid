@@ -15,6 +15,7 @@ erDiagram
         enum jenis_surat
         date tanggal_surat
         string perihal
+        int user_id FK
         string nama_lengkap_pegawai
         string nip_pegawai
         string pangkat_golongan_pegawai
@@ -50,3 +51,4 @@ erDiagram
         longtext payload
         int last_activity
     }
+    USERS ||--o{ SURATS : "creates"

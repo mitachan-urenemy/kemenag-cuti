@@ -18,6 +18,7 @@
                     'nama_lengkap_pegawai' => 'Pegawai Ditugaskan',
                     'tujuan_tugas' => 'Tujuan Tugas',
                     'tanggal_surat' => 'Tanggal Surat',
+                    'created_by_name' => 'Operator',
                     'actions' => 'Aksi',
                 ]"
             >
@@ -25,6 +26,7 @@
                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Nomor Surat</th>
                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Pegawai Ditugaskan</th>
                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Tujuan Tugas</th>
+                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Operator</th>
                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Tanggal Surat</th>
                     <th scope="col" class="relative px-6 py-3">
                         <span class="sr-only">Actions</span>
@@ -45,6 +47,9 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500" x-text="item.tujuan_tugas"></td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800" x-text="item.created_by_name"></span>
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-500" x-text="new Date(item.tanggal_surat).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})"></td>
                         <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                             <div class="flex items-center justify-end gap-2">

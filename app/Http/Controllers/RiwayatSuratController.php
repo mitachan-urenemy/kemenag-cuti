@@ -19,7 +19,7 @@ class RiwayatSuratController extends Controller
 
         // Jika request adalah AJAX (untuk DataTable)
         if ($request->wantsJson()) {
-            $query = Surat::query();
+            $query = Surat::with('user');
 
             // Search - cari di nomor surat, perihal, atau nama pegawai
             if ($search = $request->input('search')) {
@@ -74,6 +74,7 @@ class RiwayatSuratController extends Controller
             // Parse data to add custom attributes
             $surats->getCollection()->transform(function ($surat) {
                 $surat->pegawai_nama = $surat->nama_lengkap_pegawai ?? '-';
+                $surat->created_by_name = $surat->user->username ?? 'System';
                 return $surat;
             });
 
