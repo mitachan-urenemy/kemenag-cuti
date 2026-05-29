@@ -18,8 +18,6 @@ class PegawaiController extends Controller
     public function index(Request $request)
     {
         $query = Pegawai::with('user');
-
-        // Handle search
         if ($request->filled('search')) {
             $searchValue = $request->input('search');
             $query->where(function ($q) use ($searchValue) {
@@ -31,7 +29,6 @@ class PegawaiController extends Controller
             });
         }
 
-        // Handle sorting
         $sortBy = $request->input('sort_by', 'nama_lengkap');
         $sortDir = $request->input('sort_dir', 'asc');
         $query->orderBy($sortBy, $sortDir);
@@ -39,7 +36,6 @@ class PegawaiController extends Controller
         $perPage = $request->input('limit', 10);
         $pegawais = $query->paginate($perPage);
 
-        // Transform data to inject relationships for JSON/API consumption
         $pegawais->getCollection()->transform(function ($pegawai) {
             $pegawai->username = $pegawai->user->username ?? '-';
             return $pegawai;
@@ -75,7 +71,6 @@ class PegawaiController extends Controller
         $validated = $request->validated();
 
         DB::transaction(function () use ($validated) {
-            // If setting this employee as atasan, unset any other atasan
             if (isset($validated['is_atasan']) && $validated['is_atasan'] == 1) {
                 Pegawai::where('is_atasan', true)->get()->each(function (Pegawai $oldAtasan) {
                     $oldAtasan->update(['is_atasan' => false]);
