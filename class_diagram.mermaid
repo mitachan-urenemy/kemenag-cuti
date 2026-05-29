@@ -1,0 +1,68 @@
+classDiagram
+    class User {
+        +int id
+        +string username
+        +enum role
+        +boolean status
+        +string image_path
+        +string password
+        +string remember_token
+        +timestamp created_at
+        +timestamp updated_at
+        +pegawai() HasOne
+    }
+    
+    class Pegawai {
+        +int id
+        +int user_id
+        +boolean is_atasan
+        +string nama_lengkap
+        +string nip
+        +enum jenis_kelamin
+        +string tempat_lahir
+        +date tanggal_lahir
+        +enum status_kepegawaian
+        +string pangkat_golongan
+        +string jabatan
+        +string unit_kerja
+        +string pendidikan
+        +string nomor_hp
+        +string email
+        +timestamp created_at
+        +timestamp updated_at
+        +user() BelongsTo
+        +surat() HasMany
+        +suratDisetujui() HasMany
+    }
+    
+    class Surat {
+        +int id
+        +int pegawai_id
+        +int approved_by
+        +string nomor_surat
+        +enum jenis_surat
+        +date tanggal_surat
+        +string perihal
+        +enum status
+        +text keterangan
+        +text ditolak_alasan
+        +enum jenis_cuti
+        +date tanggal_mulai_cuti
+        +date tanggal_selesai_cuti
+        +text keterangan_cuti
+        +text tembusan
+        +text dasar_hukum
+        +text tujuan_tugas
+        +string lokasi_tugas
+        +date tanggal_mulai_tugas
+        +date tanggal_selesai_tugas
+        +timestamp created_at
+        +timestamp updated_at
+        +pegawai() BelongsTo
+        +approvedBy() BelongsTo
+        +hitungCuti(tanggalMulai, tanggalSelesai) array
+    }
+
+    User "1" -- "0..1" Pegawai : has
+    Pegawai "1" -- "*" Surat : requests
+    Pegawai "1" -- "*" Surat : approves

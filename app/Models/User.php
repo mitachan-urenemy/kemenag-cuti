@@ -49,10 +49,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function surats(): HasMany
-    {
-        return $this->hasMany(Surat::class);
-    }
 
     public function pegawai(): HasOne
     {
