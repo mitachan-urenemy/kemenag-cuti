@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -14,15 +13,42 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('username')->unique();
-            $table->string('email')->unique()->nullable();
+            $table->enum('role', ['admin', 'pegawai', 'pimpinan'])->default('pegawai');
+            $table->boolean('status')->default(false);
             $table->string('image_path')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
         });
 
+        Schema::create('pegawais', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users', 'id')->onDelete('cascade');
+            $table->boolean('is_atasan')->default(false);
+
+            // Informasi Pribadi
+            $table->string('nama_lengkap');
+            $table->string('nip', 25)->unique();
+            $table->enum('jenis_kelamin', ['laki', 'perempuan']);
+            $table->string('tempat_lahir')->nullable();
+            $table->date('tanggal_lahir')->nullable();
+
+            // Kepegawaian
+            $table->enum('status_kepegawaian', ['PNS', 'PPPK'])->default('PNS');
+            $table->string('pangkat_golongan')->nullable();
+            $table->string('jabatan')->nullable();
+            $table->string('unit_kerja')->nullable(); // Bidang/Seksi
+            $table->string('pendidikan')->nullable();
+
+            // Kontak
+            $table->string('nomor_hp')->nullable();
+            $table->string('email')->nullable();
+
+            $table->timestamps();
+        });
+
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->string('username')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
@@ -45,5 +71,6 @@ return new class extends Migration
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('users');
+        Schema::dropIfExists('pegawais');
     }
 };

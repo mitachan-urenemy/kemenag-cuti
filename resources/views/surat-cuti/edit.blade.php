@@ -22,96 +22,54 @@
                 </x-slot>
 
                 <div class="space-y-6">
-                    <!-- Section: Informasi Pegawai & Surat -->
-                    <div class="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-                        <h3 class="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
-                            <x-lucide-user class="w-4 h-4 text-gray-500" />
-                            Informasi Pegawai
+                    {{-- ── Section: Identitas Pegawai (readonly) ── --}}
+                    <div class="bg-blue-50/60 p-4 rounded-lg border border-blue-100">
+                        <h3 class="text-sm font-medium text-blue-900 mb-4 flex items-center gap-2">
+                            <x-lucide-user class="w-4 h-4 text-blue-600" />
+                            Identitas Pegawai
                         </h3>
-                        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                            {{-- Pegawai --}}
-                            <x-forms.text
-                                title="Nama Lengkap"
-                                name="nama_lengkap_pegawai"
-                                placeholder="Masukkan Nama Lengkap"
-                                :value="$surat_cuti->nama_lengkap_pegawai ?? old('nama_lengkap_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Nomor Induk Pegawai (NIP)"
-                                name="nip_pegawai"
-                                placeholder="Masukkan Nomor Induk Pegawai"
-                                :value="$surat_cuti->nip_pegawai ?? old('nip_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Pangkat/Golongan"
-                                name="pangkat_golongan_pegawai"
-                                placeholder="Masukkan Pangkat Golongan"
-                                :value="$surat_cuti->pangkat_golongan_pegawai ?? old('pangkat_golongan_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Jabatan"
-                                name="jabatan_pegawai"
-                                placeholder="Masukkan Jabatan"
-                                :value="$surat_cuti->jabatan_pegawai ?? old('jabatan_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Unit Kerja"
-                                name="bidang_seksi_pegawai"
-                                placeholder="Masukkan Unit Kerja"
-                                :value="$surat_cuti->bidang_seksi_pegawai ?? old('bidang_seksi_pegawai')"
-                                required
-                            />
-
-                            <x-forms.select
-                                title="Status Pegawai"
-                                name="status_pegawai"
-                                :options="['PNS' => 'PNS', 'PPPK' => 'PPPK']"
-                                :value="$surat_cuti->status_pegawai ?? old('status_pegawai')"
-                                required
-                            />
-
-                            <div class="col-span-1 md:col-span-3 flex items-center gap-4 py-2">
-                                <div class="h-px flex-1 bg-gray-200"></div>
-                                <span class="text-[12px] font-bold text-gray-400 uppercase tracking-widest">Informasi Penandatangan</span>
-                                <div class="h-px flex-1 bg-gray-200"></div>
+                        @php $pegawai = $surat_cuti->pegawai; @endphp
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3 text-sm text-gray-700">
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Nama Lengkap</span>
+                                <span class="font-semibold">{{ $pegawai?->nama_lengkap ?? '-' }}</span>
                             </div>
-
-                            {{-- Penandatangan --}}
-                            <x-forms.text
-                                title="Nama Lengkap Kepala Unit"
-                                name="nama_lengkap_kepala_pegawai"
-                                placeholder="Masukkan Nama Lengkap Kepala Unit"
-                                :value="$surat_cuti->nama_lengkap_kepala_pegawai ?? old('nama_lengkap_kepala_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Nomor Induk Pegawai (NIP)"
-                                name="nip_kepala_pegawai"
-                                placeholder="Masukkan Nomor Induk Pegawai Kepala Unit"
-                                :value="$surat_cuti->nip_kepala_pegawai ?? old('nip_kepala_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Jabatan Kepala Unit"
-                                name="jabatan_kepala_pegawai"
-                                placeholder="Masukkan Jabatan Kepala Unit"
-                                :value="$surat_cuti->jabatan_kepala_pegawai ?? old('jabatan_kepala_pegawai')"
-                                required
-                            />
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">NIP</span>
+                                <span class="font-semibold font-mono">{{ $pegawai?->nip ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Status Kepegawaian</span>
+                                <span class="font-semibold">{{ $pegawai?->status_kepegawaian ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Pangkat / Golongan</span>
+                                <span class="font-semibold">{{ $pegawai?->pangkat_golongan ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Jabatan</span>
+                                <span class="font-semibold">{{ $pegawai?->jabatan ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Unit Kerja</span>
+                                <span class="font-semibold">{{ $pegawai?->unit_kerja ?? '-' }}</span>
+                            </div>
                         </div>
+
+                        @php $pimpinan = $surat_cuti->approvedBy ?? \App\Models\Pegawai::where('is_atasan', true)->first(); @endphp
+                        @if($pimpinan)
+                        <div class="mt-4 pt-4 border-t border-blue-100">
+                            <span class="text-xs text-blue-600 font-semibold uppercase tracking-wide">Kepala Unit (Penandatangan)</span>
+                            <div class="mt-2 text-sm text-gray-700">
+                                <span class="font-semibold">{{ $pimpinan->nama_lengkap }}</span>
+                                <span class="mx-2 text-gray-400">·</span>
+                                <span class="text-gray-500">{{ $pimpinan->jabatan ?? '-' }}</span>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
-                    <!-- Section: Detail Cuti -->
+                    {{-- ── Section: Detail Cuti ── --}}
                     <div class="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
                         <h3 class="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
                             <x-lucide-calendar class="w-4 h-4 text-gray-500" />
@@ -124,9 +82,13 @@
                                     title="Nomor Surat"
                                     name="nomor_surat"
                                     placeholder="Masukkan Nomor Surat"
-                                    :value="$surat_cuti->nomor_surat ?? old('nomor_surat')"
+                                    :value="old('nomor_surat', $surat_cuti->nomor_surat)"
                                     required
+                                    readonly="{{ auth()->user()->role === 'pegawai' ? '1' : '' }}"
                                 />
+                                @if(auth()->user()->role === 'pegawai')
+                                    <p class="mt-1 text-xs text-gray-500">Nomor resmi akan digenerate otomatis oleh Admin setelah diverifikasi.</p>
+                                @endif
                             </div>
 
                             {{-- Tanggal Surat --}}
@@ -134,7 +96,7 @@
                                 <x-forms.date
                                     title="Tanggal Surat"
                                     name="tanggal_surat"
-                                    :value="$surat_cuti->tanggal_surat->format('Y-m-d') ?? old('tanggal_surat')"
+                                    :value="old('tanggal_surat', $surat_cuti->tanggal_surat->format('Y-m-d'))"
                                     required
                                 />
                             </div>
@@ -151,14 +113,14 @@
                                     title="Jenis Cuti"
                                     name="jenis_cuti"
                                     :options="[
-                                        'sakit' => 'Cuti Sakit',
-                                        'melahirkan' => 'Cuti Melahirkan',
-                                        'tahunan' => 'Cuti Tahunan',
+                                        'tahunan'        => 'Cuti Tahunan',
+                                        'sakit'          => 'Cuti Sakit',
+                                        'melahirkan'     => 'Cuti Melahirkan',
                                         'alasan_penting' => 'Cuti Alasan Penting',
-                                        'besar' => 'Cuti Besar',
+                                        'besar'          => 'Cuti Besar',
                                     ]"
                                     placeholder="Pilih jenis cuti"
-                                    :selected="$surat_cuti->jenis_cuti ?? old('jenis_cuti')"
+                                    :selected="old('jenis_cuti', $surat_cuti->jenis_cuti)"
                                     required
                                 />
                             </div>
@@ -168,7 +130,7 @@
                                 <x-forms.date
                                     title="Tanggal Mulai Cuti"
                                     name="tanggal_mulai_cuti"
-                                    :value="$surat_cuti->tanggal_mulai_cuti->format('Y-m-d') ?? old('tanggal_mulai_cuti')"
+                                    :value="old('tanggal_mulai_cuti', $surat_cuti->tanggal_mulai_cuti->format('Y-m-d'))"
                                     required
                                 />
                             </div>
@@ -176,7 +138,7 @@
                                 <x-forms.date
                                     title="Tanggal Selesai Cuti"
                                     name="tanggal_selesai_cuti"
-                                    :value="$surat_cuti->tanggal_selesai_cuti->format('Y-m-d') ?? old('tanggal_selesai_cuti')"
+                                    :value="old('tanggal_selesai_cuti', $surat_cuti->tanggal_selesai_cuti->format('Y-m-d'))"
                                     required
                                 />
                             </div>
@@ -188,7 +150,7 @@
                                     name="keterangan_cuti"
                                     placeholder="Contoh: untuk keperluan keluarga."
                                     rows="3"
-                                    :value="$surat_cuti->keterangan_cuti ?? old('keterangan_cuti')"
+                                    :value="old('keterangan_cuti', $surat_cuti->keterangan_cuti)"
                                 />
                             </div>
 
@@ -199,7 +161,7 @@
                                     name="tembusan"
                                     placeholder="Contoh: 1. Kepala Kantor Wilayah... (Pisahkan dengan baris baru)"
                                     rows="3"
-                                    :value="$surat_cuti->tembusan ?? old('tembusan')"
+                                    :value="old('tembusan', $surat_cuti->tembusan)"
                                 />
                             </div>
                         </div>

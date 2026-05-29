@@ -2,70 +2,108 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Models\Pegawai;
 use App\Models\Surat;
-use App\Http\Requests\StoreSuratCutiRequest;
-use App\Http\Requests\UpdateSuratCutiRequest; // Import the new Request
+use App\Http\Requests\SuratCuti\StoreSuratCutiRequest;
+use App\Http\Requests\SuratCuti\UpdateSuratCutiRequest;
+use App\Support\SuratStatusTransition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use Carbon\Carbon;
-
 class SuratCutiController extends Controller
 {
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helper
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private function romanMonth(int $month): string
+    {
+        return ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'][$month];
+    }
+
+    private function generateNomorSurat(): string
+    {
+        $tahun = date('Y');
+        $bulan = $this->romanMonth((int) date('n'));
+
+        $lastSurat = Surat::whereYear('created_at', $tahun)
+            ->where('jenis_surat', 'cuti')
+            ->where('nomor_surat', 'like', 'B-%')
+            ->latest('id')
+            ->first();
+
+        $nextSeq = 1;
+        if ($lastSurat && preg_match('/^B-(\d+)\//', $lastSurat->nomor_surat, $m)) {
+            $nextSeq = (int) $m[1] + 1;
+        }
+
+        $nomorUrut = str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
+
+        return "B-{$nomorUrut}/KK.01.1.19/KP.08.2/{$bulan}/{$tahun}";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Resource Methods
+    // ─────────────────────────────────────────────────────────────────────────
+
     /**
-     * Display a listing of the resource.
+     * Tampilkan daftar surat cuti (Pegawai: miliknya, Pimpinan/Admin: semua/yang perlu diproses).
      */
     public function index(Request $request)
     {
-        $today = Carbon::today();
-        $query = Surat::with('user')->where('jenis_surat', 'cuti')
-            ->whereDate('tanggal_selesai_cuti', '>=', $today);
+        $user = auth()->user();
+        $query = Surat::with('pegawai', 'approvedBy')->where('jenis_surat', 'cuti');
 
-        // Handle search
+        if ($user->role === 'pegawai') {
+            $pegawai = $user->pegawai;
+            if (!$pegawai) {
+                if ($request->wantsJson()) {
+                    return response()->json(['data' => [], 'total' => 0]);
+                }
+                return view('surat-cuti.index');
+            }
+            $query->where('pegawai_id', $pegawai->id);
+        } elseif ($user->role === 'pimpinan') {
+            $query->whereIn('status', ['diproses', 'disetujui', 'ditolak']);
+        }
+
         if ($request->filled('search')) {
-            $searchValue = $request->input('search');
-            $query->where(function ($q) use ($searchValue) {
-                $q->where('nomor_surat', 'like', "%{$searchValue}%")
-                    ->orWhere('jenis_cuti', 'like', "%{$searchValue}%")
-                    ->orWhere('nama_lengkap_pegawai', 'like', "%{$searchValue}%")
-                    ->orWhere('nip_pegawai', 'like', "%{$searchValue}%");
+            $kw = $request->input('search');
+            $query->where(function ($q) use ($kw) {
+                $q->where('nomor_surat', 'like', "%{$kw}%")
+                    ->orWhere('jenis_cuti', 'like', "%{$kw}%")
+                    ->orWhereHas('pegawai', fn($pq) => $pq
+                        ->where('nama_lengkap', 'like', "%{$kw}%")
+                        ->orWhere('nip', 'like', "%{$kw}%"));
             });
         }
 
-        // Handle sorting
-        $sortBy = $request->input('sort_by', 'tanggal_surat');
+        if ($request->filled('jenis_cuti')) {
+            $query->where('jenis_cuti', $request->input('jenis_cuti'));
+        }
+        if ($request->filled('filter_status')) {
+            $query->where('status', $request->input('filter_status'));
+        }
+        if ($request->filled('status_kepegawaian')) {
+            $query->whereHas('pegawai', fn($pq) => $pq->where('status_kepegawaian', $request->input('status_kepegawaian')));
+        }
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_surat', $request->input('bulan'));
+        }
+
+        $sortBy = $request->input('sort_by', 'created_at');
         $sortDir = $request->input('sort_dir', 'desc');
-        $query->orderBy($sortBy, $sortDir);
+        $surats = $query->orderBy($sortBy, $sortDir)->paginate($request->input('limit', 10));
 
-        $perPage = $request->input('limit', 10);
-        $surats = $query->paginate($perPage);
-
-        // Transform data
         $surats->getCollection()->transform(function ($surat) {
-            $cuti = $surat->hitungCuti(
-                $surat->tanggal_mulai_cuti,
-                $surat->tanggal_selesai_cuti
-            );
-
-            $surat->pegawai_nama = $surat->nama_lengkap_pegawai;
-            $surat->status_cuti = $cuti['status'];       // BELUM_DIMULAI | SEDANG_CUTI
-            $surat->sisa_cuti = $cuti['sisa_cuti'];      // countdown
-            $surat->created_by_name = $surat->user->username ?? 'System';
-
+            $surat->pegawai_nama = $surat->pegawai->nama_lengkap ?? '-';
+            $surat->pegawai_nip = $surat->pegawai->nip ?? '-';
+            $surat->pegawai_status_kepegawaian = $surat->pegawai->status_kepegawaian ?? '-';
+            $surat->jumlah_hari = ($surat->tanggal_mulai_cuti && $surat->tanggal_selesai_cuti)
+                ? $surat->tanggal_mulai_cuti->diffInDays($surat->tanggal_selesai_cuti) + 1
+                : 0;
             return $surat;
         });
-
-        // Handle status
-        if ($request->filled('status')) {
-            $status = $request->input('status');
-
-            $surats->setCollection(
-                $surats->getCollection()->filter(
-                    fn ($s) => $s->status_cuti === $status
-                )->values()
-            );
-        }
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -74,198 +112,279 @@ class SuratCutiController extends Controller
             ]);
         }
 
+        $nextNomorSurat = '';
+        if ($user->role === 'admin') {
+            $nextNomorSurat = $this->generateNomorSurat();
+        }
+
         return view('surat-cuti.index', [
-            'surats' => $surats->appends(request()->query())
+            'surats' => $surats->appends(request()->query()),
+            'nextNomorSurat' => $nextNomorSurat
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Form pengajuan cuti.
+     * - Pegawai  : form untuk diri sendiri.
+     * - Admin    : form dengan dropdown pilih pegawai.
      */
     public function create()
     {
-        // Generate Nomor Surat Cuti: Format: B–001/KK.01.1.19/KP.08.2/01/2025
-        $bulan = date('m');
-        $tahun = date('Y');
+        $user = auth()->user();
+        $pimpinan = Pegawai::where('is_atasan', true)->first();
 
-        // Find the last CUTI letter created this year to determine the sequence
-        // We filter by 'B-' prefix and ensures it's a 'cuti' type for safety
-        $lastSurat = Surat::whereYear('tanggal_surat', $tahun)
-                        ->where('jenis_surat', 'cuti')
-                        ->where('nomor_surat', 'like', 'B-%')
-                        ->latest('id')
-                        ->first();
-
-        $nextSequence = 1;
-        if ($lastSurat) {
-            // Extract the sequence number from format B-XXX/...
-            if (preg_match('/B-(\d+)\//', $lastSurat->nomor_surat, $matches)) {
-                $nextSequence = intval($matches[1]) + 1;
-            }
+        if ($user->role === 'admin') {
+            $pegawais = Pegawai::orderBy('nama_lengkap')->get();
+            $generatedNomorSurat = $this->generateNomorSurat();
+            return view('surat-cuti.create', compact('pimpinan', 'generatedNomorSurat', 'pegawais'));
         }
 
-        $nomorUrut = str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
-        $generatedNomorSurat = "B-{$nomorUrut}/KK.01.1.19/KP.08.2/{$bulan}/{$tahun}";
+        $pegawai = $user->pegawai;
+        if (!$pegawai) {
+            return redirect()->route('surat-cuti.index')
+                ->with('notification', ['type' => 'error', 'title' => 'Gagal', 'message' => 'Data pegawai Anda tidak ditemukan.']);
+        }
 
-        return view('surat-cuti.create', compact('generatedNomorSurat'));
+        // Pegawai: dapat nomor draft sementara
+        $generatedNomorSurat = 'DRAFT-' . time();
+
+        return view('surat-cuti.create', compact('pegawai', 'pimpinan', 'generatedNomorSurat'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan permohonan cuti baru.
+     * - Pegawai : untuk diri sendiri.
+     * - Admin   : pilih pegawai via pegawai_id di form.
      */
     public function store(StoreSuratCutiRequest $request)
     {
         $validated = $request->validated();
+        $user = auth()->user();
 
-        $surat = DB::transaction(function () use ($validated, $request) {
-            $surat = Surat::create([
+        // Tentukan pegawai: admin bisa pilih, pegawai hanya dirinya sendiri
+        if ($user->role === 'admin' && !empty($validated['pegawai_id'])) {
+            $pegawai = Pegawai::findOrFail($validated['pegawai_id']);
+        } else {
+            $pegawai = $user->pegawai;
+        }
+
+        if (!$pegawai) {
+            return back()->withErrors(['error' => 'Data pegawai tidak ditemukan.']);
+        }
+
+        $surat = DB::transaction(function () use ($validated, $pegawai) {
+            return Surat::create([
+                'pegawai_id' => $pegawai->id,
                 'jenis_surat' => 'cuti',
                 'nomor_surat' => $validated['nomor_surat'],
                 'tanggal_surat' => $validated['tanggal_surat'],
-                'perihal' => 'Permohonan cuti ' . ucfirst($validated['jenis_cuti']),
-                'user_id' => $request->user()->id,
-
-                // Manual input pegawai
-                'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],
-                'nip_pegawai' => $validated['nip_pegawai'],
-                'pangkat_golongan_pegawai' => $validated['pangkat_golongan_pegawai'],
-                'jabatan_pegawai' => $validated['jabatan_pegawai'],
-                'bidang_seksi_pegawai' => $validated['bidang_seksi_pegawai'],
-                'status_pegawai' => $validated['status_pegawai'],
-
-                // Manual input penandatangan
-                'nama_lengkap_kepala_pegawai' => $validated['nama_lengkap_kepala_pegawai'],
-                'nip_kepala_pegawai' => $validated['nip_kepala_pegawai'],
-                'jabatan_kepala_pegawai' => $validated['jabatan_kepala_pegawai'],
-
+                'perihal' => 'Permohonan Cuti ' . ucfirst(str_replace('_', ' ', $validated['jenis_cuti'])),
+                'status' => 'diajukan',
                 'jenis_cuti' => $validated['jenis_cuti'],
                 'tanggal_mulai_cuti' => $validated['tanggal_mulai_cuti'],
                 'tanggal_selesai_cuti' => $validated['tanggal_selesai_cuti'],
-                'keterangan_cuti' => $validated['keterangan_cuti'],
+                'keterangan_cuti' => $validated['keterangan_cuti'] ?? null,
                 'tembusan' => $validated['tembusan'] ?? null,
             ]);
-
-            return $surat;
         });
 
-        return redirect()->route('surat-cuti.show', ['surat_cuti' => $surat])
+        return redirect()->route('surat-cuti.show', $surat)
             ->with('notification', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
-                'message' => 'Surat cuti telah berhasil dibuat. Silakan periksa detailnya.'
+                'message' => 'Surat cuti berhasil dibuat.',
             ]);
     }
 
     /**
-     * Display the specified resource.
+     * Detail surat cuti + preview cetak.
      */
     public function show(Surat $surat_cuti)
     {
-        $surat = $surat_cuti;
+        $surat = $surat_cuti->load('pegawai', 'approvedBy');
+        $pegawai = $surat->pegawai;
+        $pimpinan = $surat->approvedBy ?? Pegawai::where('is_atasan', true)->first();
+
+        $lamaCutiStr = '';
+        if ($surat->tanggal_mulai_cuti && $surat->tanggal_selesai_cuti) {
+            $hari = $surat->tanggal_mulai_cuti->diffInDays($surat->tanggal_selesai_cuti) + 1;
+            $lamaCutiStr = $hari . ' hari';
+        }
+
+        $templateData = [
+            'surat' => $surat,
+            'pegawai' => $pegawai,
+            'pimpinan' => $pimpinan,
+            'lama_cuti' => $lamaCutiStr,
+        ];
 
         $template = 'surat-cuti.template';
 
-        // Calculate duration
-        $lama_cuti_str = '';
-        if ($surat->tanggal_mulai_cuti && $surat->tanggal_selesai_cuti) {
-            $lama_cuti_hari = $surat->tanggal_mulai_cuti
-                ->diffInDays($surat->tanggal_selesai_cuti) + 1; // +1 kalau mau inklusif
-
-            $lama_cuti_str = $lama_cuti_hari . ' hari';
-        }
-
-        $data = [
-            'nomor_surat' => $surat->nomor_surat,
-            'tanggal_surat' => Carbon::parse($surat->tanggal_surat)->translatedFormat('d F Y'),
-
-            'nama' => $surat->nama_lengkap_pegawai ?? '',
-            'nip' => $surat->nip_pegawai ?? '',
-            'pangkat' => $surat->pangkat_golongan_pegawai ?? '',
-            'jabatan' => $surat->jabatan_pegawai ?? '',
-            'unit_kerja' => $surat->bidang_seksi_pegawai ?? 'Kantor Kementerian Agama Kabupaten Bener Meriah',
-
-            'lama_cuti' => $lama_cuti_str,
-            'tanggal_mulai' => Carbon::parse($surat->tanggal_mulai_cuti)->translatedFormat('d F Y'),
-            'tanggal_selesai' => Carbon::parse($surat->tanggal_selesai_cuti)->translatedFormat('d F Y'),
-
-            'nama_kepala' => $surat->nama_lengkap_kepala_pegawai ?? 'Kepala Dinas',
-            'nip_kepala' => $surat->nip_kepala_pegawai ?? '',
-            'jabatan_kepala' => $surat->jabatan_kepala_pegawai ?? '',
-
-            'surat' => $surat,
-        ];
-
-
         if (request()->has('print')) {
-            return view($template, $data);
+            return view($template, $templateData);
         }
 
         return view('surat-cuti.show', [
-            'surat' => $surat, // for action buttons
+            'surat' => $surat,
             'template' => $template,
-            'data' => $data,
+            'template_data' => $templateData,
         ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Form edit surat cuti.
+     * - Admin   : bisa edit semua surat (status draft/diajukan)
+     * - Pegawai : hanya surat milik sendiri (status draft/diajukan)
      */
     public function edit(Surat $surat_cuti)
     {
-        return view('surat-cuti.edit', compact('surat_cuti'));
+        $user = auth()->user();
+
+        // Hanya admin atau pemilik surat yang boleh edit
+        if ($user->role === 'pegawai' && $surat_cuti->pegawai_id !== $user->pegawai?->id) {
+            abort(403, 'Anda tidak memiliki izin untuk mengedit surat ini.');
+        }
+        if ($user->role === 'pimpinan') {
+            abort(403, 'Pimpinan tidak diizinkan mengedit surat cuti.');
+        }
+
+        if (!in_array($surat_cuti->status, ['draft', 'diajukan'])) {
+            return redirect()->route('surat-cuti.show', $surat_cuti)
+                ->with('notification', ['type' => 'error', 'title' => 'Tidak Diizinkan', 'message' => 'Surat yang sudah diproses tidak dapat diubah.']);
+        }
+
+        return view('surat-cuti.edit', [
+            'surat_cuti' => $surat_cuti->load('pegawai'),
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update surat cuti.
+     * - Admin   : bisa update semua surat (status draft/diajukan)
+     * - Pegawai : hanya surat milik sendiri (status draft/diajukan)
      */
     public function update(UpdateSuratCutiRequest $request, Surat $surat_cuti)
     {
+        $user = auth()->user();
+
+        if ($user->role === 'pegawai' && $surat_cuti->pegawai_id !== $user->pegawai?->id) {
+            abort(403);
+        }
+        if ($user->role === 'pimpinan') {
+            abort(403);
+        }
+
+        if (!in_array($surat_cuti->status, ['draft', 'diajukan'])) {
+            return back()->with('notification', ['type' => 'error', 'title' => 'Gagal', 'message' => 'Surat yang sudah diproses tidak dapat diubah.']);
+        }
+
         $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $surat_cuti) {
             $surat_cuti->update([
                 'tanggal_surat' => $validated['tanggal_surat'],
-                'perihal' => 'Permohonan cuti ' . ucfirst($validated['jenis_cuti']),
-
-                // Manual input pegawai
-                'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],
-                'nip_pegawai' => $validated['nip_pegawai'],
-                'pangkat_golongan_pegawai' => $validated['pangkat_golongan_pegawai'],
-                'jabatan_pegawai' => $validated['jabatan_pegawai'],
-                'bidang_seksi_pegawai' => $validated['bidang_seksi_pegawai'],
-                'status_pegawai' => $validated['status_pegawai'],
-
-                // Manual input penandatangan
-                'nama_lengkap_kepala_pegawai' => $validated['nama_lengkap_kepala_pegawai'],
-                'nip_kepala_pegawai' => $validated['nip_kepala_pegawai'],
-                'jabatan_kepala_pegawai' => $validated['jabatan_kepala_pegawai'],
-
+                'perihal' => 'Permohonan Cuti ' . ucfirst(str_replace('_', ' ', $validated['jenis_cuti'])),
                 'jenis_cuti' => $validated['jenis_cuti'],
                 'tanggal_mulai_cuti' => $validated['tanggal_mulai_cuti'],
                 'tanggal_selesai_cuti' => $validated['tanggal_selesai_cuti'],
-                'keterangan_cuti' => $validated['keterangan_cuti'],
+                'keterangan_cuti' => $validated['keterangan_cuti'] ?? null,
                 'tembusan' => $validated['tembusan'] ?? null,
             ]);
         });
 
         return redirect()->route('surat-cuti.show', $surat_cuti)
-            ->with('notification', [
-                'type' => 'success',
-                'title' => 'Berhasil!',
-                'message' => 'Surat cuti telah berhasil diperbarui.'
-            ]);
+            ->with('notification', ['type' => 'success', 'title' => 'Berhasil!', 'message' => 'Surat cuti telah berhasil diperbarui.']);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hapus surat cuti.
      */
     public function destroy(string $id)
     {
         Surat::destroy($id);
-        return redirect()->route('surat-cuti.index')->with('notification', [
-            'type' => 'success',
-            'title' => 'Dihapus!',
-            'message' => 'Surat cuti telah berhasil dihapus.'
+
+        return redirect()->route('surat-cuti.index')
+            ->with('notification', ['type' => 'success', 'title' => 'Dihapus!', 'message' => 'Surat cuti telah berhasil dihapus.']);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Status Transition Actions
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Admin: ubah status diajukan > diproses (lapor ke pimpinan) dan berikan nomor surat resmi.
+     */
+    public function verifikasi(Request $request, Surat $surat_cuti)
+    {
+        try {
+            SuratStatusTransition::assertValid($surat_cuti->status, 'diproses');
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('notification', ['type' => 'error', 'title' => 'Gagal', 'message' => $e->getMessage()]);
+        }
+
+        $request->validate([
+            'nomor_surat' => 'required|string|max:100|unique:surats,nomor_surat,' . $surat_cuti->id,
         ]);
+
+        $surat_cuti->update([
+            'status' => 'diproses',
+            'keterangan' => $request->input('keterangan'),
+            'nomor_surat' => $request->input('nomor_surat'),
+        ]);
+
+        return back()->with('notification', [
+            'type' => 'success',
+            'title' => 'Diteruskan!',
+            'message' => 'Surat cuti telah diteruskan ke pimpinan dengan nomor resmi.',
+        ]);
+    }
+
+    /**
+     * Pimpinan: setujui surat cuti (diproses > disetujui) + kurangi kuota.
+     */
+    public function setujui(Request $request, Surat $surat_cuti)
+    {
+        try {
+            SuratStatusTransition::assertValid($surat_cuti->status, 'disetujui');
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('notification', ['type' => 'error', 'title' => 'Gagal', 'message' => $e->getMessage()]);
+        }
+
+        $pimpinanPegawai = auth()->user()->pegawai;
+
+        DB::transaction(function () use ($surat_cuti, $pimpinanPegawai) {
+            $surat_cuti->update([
+                'status' => 'disetujui',
+                'approved_by' => $pimpinanPegawai?->id,
+            ]);
+        });
+
+        return back()->with('notification', ['type' => 'success', 'title' => 'Disetujui!', 'message' => 'Surat cuti telah disetujui.']);
+    }
+
+    /**
+     * Pimpinan: tolak surat cuti (diproses > ditolak) + simpan alasan.
+     */
+    public function tolak(Request $request, Surat $surat_cuti)
+    {
+        $request->validate([
+            'ditolak_alasan' => ['required', 'string', 'max:500'],
+        ]);
+
+        try {
+            SuratStatusTransition::assertValid($surat_cuti->status, 'ditolak');
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('notification', ['type' => 'error', 'title' => 'Gagal', 'message' => $e->getMessage()]);
+        }
+
+        $pimpinanPegawai = auth()->user()->pegawai;
+
+        $surat_cuti->update([
+            'status' => 'ditolak',
+            'approved_by' => $pimpinanPegawai?->id,
+            'ditolak_alasan' => $request->input('ditolak_alasan'),
+        ]);
+
+        return back()->with('notification', ['type' => 'info', 'title' => 'Ditolak', 'message' => 'Surat cuti telah ditolak.']);
     }
 }

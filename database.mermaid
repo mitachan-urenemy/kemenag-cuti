@@ -2,29 +2,44 @@ erDiagram
     USERS {
         int id PK
         string username
-        string email
+        enum role
+        boolean status
         string image_path
         string password
         string remember_token
         timestamp created_at
         timestamp updated_at
     }
+    PEGAWAIS {
+        int id PK
+        int user_id FK
+        boolean is_atasan
+        string nama_lengkap
+        string nip
+        enum jenis_kelamin
+        string tempat_lahir
+        date tanggal_lahir
+        enum status_kepegawaian
+        string pangkat_golongan
+        string jabatan
+        string unit_kerja
+        string pendidikan
+        string nomor_hp
+        string email
+        timestamp created_at
+        timestamp updated_at
+    }
     SURATS {
         int id PK
+        int pegawai_id FK
+        int approved_by FK "nullable - pimpinan yang acc/tolak"
         string nomor_surat
         enum jenis_surat
         date tanggal_surat
         string perihal
-        int user_id FK
-        string nama_lengkap_pegawai
-        string nip_pegawai
-        string pangkat_golongan_pegawai
-        string jabatan_pegawai
-        string bidang_seksi_pegawai
-        enum status_pegawai
-        string nama_lengkap_kepala_pegawai
-        string nip_kepala_pegawai
-        string jabatan_kepala_pegawai
+        enum status
+        text keterangan
+        text ditolak_alasan
         enum jenis_cuti
         date tanggal_mulai_cuti
         date tanggal_selesai_cuti
@@ -38,8 +53,18 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
+    CUTI_KUOTA {
+        int id PK
+        int pegawai_id FK
+        int tahun
+        enum jenis_cuti
+        int kuota_hari
+        int terpakai
+        timestamp created_at
+        timestamp updated_at
+    }
     PASSWORD_RESET_TOKENS {
-        string email PK
+        string username PK
         string token
         timestamp created_at
     }
@@ -51,4 +76,7 @@ erDiagram
         longtext payload
         int last_activity
     }
-    USERS ||--o{ SURATS : "creates"
+    USERS ||--o| PEGAWAIS : "has"
+    PEGAWAIS ||--o{ SURATS : "requests"
+    PEGAWAIS ||--o{ SURATS : "approves"
+    PEGAWAIS ||--o{ CUTI_KUOTA : "has quota"

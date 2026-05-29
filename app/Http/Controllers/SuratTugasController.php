@@ -2,48 +2,117 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pegawai;
 use App\Models\Surat;
-use App\Http\Requests\StoreSuratTugasRequest;
-use App\Http\Requests\UpdateSuratTugasRequest;
+use App\Http\Requests\SuratTugas\StoreSuratTugasRequest;
+use App\Http\Requests\SuratTugas\UpdateSuratTugasRequest;
+use App\Support\SuratStatusTransition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
 use Carbon\Carbon;
 
 class SuratTugasController extends Controller
 {
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private function romanMonth(int $month): string
+    {
+        return ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'][$month];
+    }
+
+    private function generateNomorSurat(): string
+    {
+        $tahun = date('Y');
+        $bulan = $this->romanMonth((int) date('n'));
+
+        $lastSurat = Surat::whereYear('created_at', $tahun)
+            ->where('jenis_surat', 'tugas')
+            ->where('nomor_surat', 'like', 'B-%')
+            ->latest('id')
+            ->first();
+
+        $nextSeq = 1;
+        if ($lastSurat && preg_match('/^B-(\d+)\//', $lastSurat->nomor_surat, $m)) {
+            $nextSeq = (int) $m[1] + 1;
+        }
+
+        $nomorUrut = str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
+
+        return "B-{$nomorUrut}/KK.01.19/I/KP.02.2/{$bulan}/{$tahun}";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Resource Methods
+    // ─────────────────────────────────────────────────────────────────────────
+
     /**
-     * Display a listing of the resource.
+     * Daftar & monitoring surat tugas.
      */
     public function index(Request $request)
     {
         $today = Carbon::today();
-        $query = Surat::with('user')->where('jenis_surat', 'tugas')
-            ->whereDate('tanggal_selesai_tugas', '>=', $today);
+        $user = auth()->user();
 
-        // Handle search
+        $query = Surat::with('pegawai', 'approvedBy')->where('jenis_surat', 'tugas');
+
+        if ($user->role === 'pegawai') {
+            $pegawai = $user->pegawai;
+            if (!$pegawai) {
+                if ($request->wantsJson())
+                    return response()->json(['data' => [], 'total' => 0]);
+                return view('surat-tugas.index');
+            }
+            $query->where('pegawai_id', $pegawai->id);
+        }
+
         if ($request->filled('search')) {
-            $searchValue = $request->input('search');
-            $query->where(function ($q) use ($searchValue) {
-                $q->where('nomor_surat', 'like', "%{$searchValue}%")
-                    ->orWhere('tujuan_tugas', 'like', "%{$searchValue}%")
-                    ->orWhere('nama_lengkap_pegawai', 'like', "%{$searchValue}%")
-                    ->orWhere('nip_pegawai', 'like', "%{$searchValue}%");
+            $kw = $request->input('search');
+            $query->where(function ($q) use ($kw) {
+                $q->where('nomor_surat', 'like', "%{$kw}%")
+                    ->orWhere('tujuan_tugas', 'like', "%{$kw}%")
+                    ->orWhere('lokasi_tugas', 'like', "%{$kw}%")
+                    ->orWhereHas('pegawai', fn($pq) => $pq
+                        ->where('nama_lengkap', 'like', "%{$kw}%")
+                        ->orWhere('nip', 'like', "%{$kw}%"));
             });
         }
 
-        // Handle sorting
-        $sortBy = $request->input('sort_by', 'tanggal_surat');
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal_surat', $request->input('bulan'));
+        }
+        if ($request->filled('filter_status_tugas')) {
+            $statusTugas = $request->input('filter_status_tugas');
+            if ($statusTugas === 'SEDANG_BERJALAN') {
+                $query->whereDate('tanggal_mulai_tugas', '<=', $today)
+                    ->whereDate('tanggal_selesai_tugas', '>=', $today);
+            } elseif ($statusTugas === 'SELESAI') {
+                $query->whereDate('tanggal_selesai_tugas', '<', $today);
+            }
+        }
+
+        $sortBy = $request->input('sort_by', 'created_at');
         $sortDir = $request->input('sort_dir', 'desc');
-        $query->orderBy($sortBy, $sortDir);
+        $surats = $query->orderBy($sortBy, $sortDir)->paginate($request->input('limit', 10));
 
-        $perPage = $request->input('limit', 10);
-        $surats = $query->paginate($perPage);
+        $surats->getCollection()->transform(function ($surat) use ($today) {
+            $surat->pegawai_nama = $surat->pegawai->nama_lengkap ?? '-';
+            $surat->pegawai_nip = $surat->pegawai->nip ?? '-';
 
-        // Transform data
-        $surats->getCollection()->transform(function ($surat) {
-            $surat->nama_lengkap_pegawai = $surat->nama_lengkap_pegawai ?? '-';
-            $surat->created_by_name = $surat->user->username ?? 'System';
+            if ($surat->tanggal_mulai_tugas && $surat->tanggal_selesai_tugas) {
+                $mulai = $surat->tanggal_mulai_tugas;
+                $selesai = $surat->tanggal_selesai_tugas;
+
+                $surat->status_tugas = match (true) {
+                    $today->lt($mulai) => 'BELUM_DIMULAI',
+                    $today->between($mulai, $selesai) => 'SEDANG_BERJALAN',
+                    default => 'SELESAI',
+                };
+            } else {
+                $surat->status_tugas = '-';
+            }
+
             return $surat;
         });
 
@@ -55,166 +124,126 @@ class SuratTugasController extends Controller
         }
 
         return view('surat-tugas.index', [
-            'surats' => $surats->appends(request()->query())
+            'surats' => $surats->appends(request()->query()),
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Form buat surat tugas (admin).
      */
     public function create()
     {
-        // Generate Nomor Surat Tugas: Format: B–001/KK.01.19/I/KP.02.2/01/2025
-        // Prefix B- (DIKEMBALIKAN SESUAI PERMINTAAN USER)
-        $bulan = Carbon::now()->format('m');
-        $tahun = Carbon::now()->format('Y');
+        $pegawais = Pegawai::orderBy('nama_lengkap')->get();
+        $pimpinan = Pegawai::where('is_atasan', true)->first();
+        $generatedNomorSurat = $this->generateNomorSurat();
 
-        // Cari surat terakhir yang dibuat untuk tahun ini
-        $lastSurat = Surat::whereYear('tanggal_surat', $tahun)
-                        ->where('jenis_surat', 'tugas')
-                        ->where('nomor_surat', 'like', 'B-%')
-                        ->latest('id')
-                        ->first();
-
-        $nextSequence = 1;
-        if ($lastSurat) {
-            // Ekstrak nomor surat terakhir dari format B-XXX/...
-            if (preg_match('/B-(\d+)\//', $lastSurat->nomor_surat, $matches)) {
-                $nextSequence = intval($matches[1]) + 1;
-            }
-        }
-
-        $nomorUrut = str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
-        $generatedNomorSurat = "B-{$nomorUrut}/KK.01.19/I/KP.02.2/{$bulan}/{$tahun}";
-
-        return view('surat-tugas.create', compact('generatedNomorSurat'));
+        return view('surat-tugas.create', compact('pegawais', 'pimpinan', 'generatedNomorSurat'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan surat tugas - satu row per pegawai yang dipilih.
+     * Jika multi-pegawai, nomor surat diberi seri: /1, /2, dst.
      */
     public function store(StoreSuratTugasRequest $request)
     {
         $validated = $request->validated();
+        $pegawaiIds = $validated['pegawai_ids'];
+        $multi = count($pegawaiIds) > 1;
 
-        $surat = DB::transaction(function () use ($validated, $request) {
-            $surat = Surat::create([
-                'jenis_surat' => 'tugas',
-                'nomor_surat' => $validated['nomor_surat'],
-                'tanggal_surat' => $validated['tanggal_surat'],
-                'perihal' => $validated['tujuan_tugas'],
-                'user_id' => $request->user()->id,
+        $pertamaSurat = DB::transaction(function () use ($validated, $pegawaiIds, $multi) {
+            $pertama = null;
 
-                // Manual input pegawai
-                'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],
-                'nip_pegawai' => $validated['nip_pegawai'],
-                'pangkat_golongan_pegawai' => $validated['pangkat_golongan_pegawai'],
-                'jabatan_pegawai' => $validated['jabatan_pegawai'],
-                'bidang_seksi_pegawai' => $validated['bidang_seksi_pegawai'],
-                'status_pegawai' => $validated['status_pegawai'],
+            foreach ($pegawaiIds as $index => $pegawaiId) {
+                $pegawai = Pegawai::findOrFail($pegawaiId);
+                $nomor = $multi
+                    ? $validated['nomor_surat'] . '/' . ($index + 1)
+                    : $validated['nomor_surat'];
 
-                // Manual input penandatangan
-                'nama_lengkap_kepala_pegawai' => $validated['nama_lengkap_kepala_pegawai'],
-                'nip_kepala_pegawai' => $validated['nip_kepala_pegawai'],
-                'jabatan_kepala_pegawai' => $validated['jabatan_kepala_pegawai'],
+                $surat = Surat::create([
+                    'pegawai_id' => $pegawai->id,
+                    'jenis_surat' => 'tugas',
+                    'nomor_surat' => $nomor,
+                    'tanggal_surat' => $validated['tanggal_surat'],
+                    'perihal' => $validated['perihal'],
+                    'status' => 'diproses', // masuk ke pimpinan dulu
+                    'dasar_hukum' => $validated['dasar_hukum'],
+                    'tujuan_tugas' => $validated['tujuan_tugas'],
+                    'lokasi_tugas' => $validated['lokasi_tugas'],
+                    'tanggal_mulai_tugas' => $validated['tanggal_mulai_tugas'],
+                    'tanggal_selesai_tugas' => $validated['tanggal_selesai_tugas'],
+                ]);
 
-                'dasar_hukum' => $validated['dasar_hukum'],
-                'tujuan_tugas' => $validated['tujuan_tugas'],
-                'lokasi_tugas' => $validated['lokasi_tugas'],
-                'tanggal_mulai_tugas' => $validated['tanggal_mulai_tugas'],
-                'tanggal_selesai_tugas' => $validated['tanggal_selesai_tugas'],
-            ]);
+                if ($index === 0)
+                    $pertama = $surat;
+            }
 
-            return $surat;
+            return $pertama;
         });
 
-        return redirect()->route('surat-tugas.show', ['surat_tugas' => $surat])
+        return redirect()->route('surat-tugas.show', ['surat_tugas' => $pertamaSurat])
             ->with('notification', [
                 'type' => 'success',
                 'title' => 'Berhasil!',
-                'message' => 'Surat tugas telah berhasil dibuat. Silakan periksa detailnya.'
+                'message' => count($pegawaiIds) > 1
+                    ? count($pegawaiIds) . ' surat tugas berhasil dibuat.'
+                    : 'Surat tugas berhasil dibuat.',
             ]);
     }
 
     /**
-     * Display the specified resource.
+     * Detail surat tugas.
      */
     public function show(Surat $surat_tugas)
     {
-        $surat = $surat_tugas;
+        $surat = $surat_tugas->load('pegawai', 'approvedBy');
+        $pegawai = $surat->pegawai;
+        $pimpinan = $surat->approvedBy ?? Pegawai::where('is_atasan', true)->first();
 
-        $template = 'surat-tugas.template'; // For now, a single template for Surat Tugas
-
-        $data = [
-            'nomor_surat' => $surat->nomor_surat,
-            'tanggal_surat' => Carbon::parse($surat->tanggal_surat)->translatedFormat('d F Y'),
-            'dasar_hukum' => $surat->dasar_hukum,
-            'tujuan_tugas' => $surat->tujuan_tugas,
-            'lokasi_tugas' => $surat->lokasi_tugas,
-            'tanggal_mulai_tugas' => Carbon::parse($surat->tanggal_mulai_tugas)->translatedFormat('d F Y'),
-            'tanggal_selesai_tugas' => Carbon::parse($surat->tanggal_selesai_tugas)->translatedFormat('d F Y'),
-
-            // To be compatible with view that expects 'pegawai' object
-            'pegawai' => (object) [
-                'nama_lengkap' => $surat->nama_lengkap_pegawai,
-                'nip' => $surat->nip_pegawai,
-                'pangkat_golongan' => $surat->pangkat_golongan_pegawai,
-                'jabatan' => $surat->jabatan_pegawai,
-                'bidang_seksi' => $surat->bidang_seksi_pegawai,
-                'status_pegawai' => $surat->status_pegawai,
-            ],
-
-            'nama_penandatangan' => $surat->nama_lengkap_kepala_pegawai ?? '',
-            'nip_penandatangan' => $surat->nip_kepala_pegawai ?? '',
-            'jabatan_penandatangan' => $surat->jabatan_kepala_pegawai ?? '',
-            'surat' => $surat, // Pass the original object for templates that need it
+        $templateData = [
+            'surat' => $surat,
+            'pegawai' => $pegawai,
+            'pimpinan' => $pimpinan,
         ];
 
+        $template = 'surat-tugas.template';
+
         if (request()->has('print')) {
-            $data['trigger_print'] = true;
-            return view($template, $data);
+            return view($template, $templateData);
         }
 
         return view('surat-tugas.show', [
-            'surat' => $surat, // for action buttons
+            'surat' => $surat,
             'template' => $template,
-            'data' => $data,
+            'template_data' => $templateData,
         ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Form edit surat tugas (admin only).
      */
     public function edit(Surat $surat_tugas)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Hanya admin yang dapat mengedit surat tugas.');
+        }
+
         return view('surat-tugas.edit', compact('surat_tugas'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update surat tugas (admin only).
      */
     public function update(UpdateSuratTugasRequest $request, Surat $surat_tugas)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
         $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $surat_tugas) {
             $surat_tugas->update([
                 'tanggal_surat' => $validated['tanggal_surat'],
-                'perihal' => $validated['tujuan_tugas'],
-
-                // Manual input pegawai
-                'nama_lengkap_pegawai' => $validated['nama_lengkap_pegawai'],
-                'nip_pegawai' => $validated['nip_pegawai'],
-                'pangkat_golongan_pegawai' => $validated['pangkat_golongan_pegawai'],
-                'jabatan_pegawai' => $validated['jabatan_pegawai'],
-                'bidang_seksi_pegawai' => $validated['bidang_seksi_pegawai'],
-                'status_pegawai' => $validated['status_pegawai'],
-
-                // Manual input penandatangan
-                'nama_lengkap_kepala_pegawai' => $validated['nama_lengkap_kepala_pegawai'],
-                'nip_kepala_pegawai' => $validated['nip_kepala_pegawai'],
-                'jabatan_kepala_pegawai' => $validated['jabatan_kepala_pegawai'],
-
+                'perihal' => $validated['perihal'],
                 'dasar_hukum' => $validated['dasar_hukum'],
                 'tujuan_tugas' => $validated['tujuan_tugas'],
                 'lokasi_tugas' => $validated['lokasi_tugas'],
@@ -224,23 +253,73 @@ class SuratTugasController extends Controller
         });
 
         return redirect()->route('surat-tugas.show', $surat_tugas)
-            ->with('notification', [
-                'type' => 'success',
-                'title' => 'Berhasil!',
-                'message' => 'Surat tugas telah berhasil diperbarui.'
-            ]);
+            ->with('notification', ['type' => 'success', 'title' => 'Berhasil!', 'message' => 'Surat tugas berhasil diperbarui.']);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hapus surat tugas.
      */
     public function destroy(string $id)
     {
         Surat::destroy($id);
-        return redirect()->route('surat-tugas.index')->with('notification', [
+
+        return redirect()->route('surat-tugas.index')
+            ->with('notification', ['type' => 'success', 'title' => 'Dihapus!', 'message' => 'Surat tugas berhasil dihapus.']);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Status Transition Actions
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Pimpinan: setujui surat tugas (diproses > disetujui).
+     */
+    public function setujui(Request $request, Surat $surat_tugas)
+    {
+        try {
+            SuratStatusTransition::assertValid($surat_tugas->status, 'disetujui');
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('notification', ['type' => 'error', 'title' => 'Gagal', 'message' => $e->getMessage()]);
+        }
+
+        $pimpinanPegawai = auth()->user()->pegawai;
+
+        $surat_tugas->update([
+            'status' => 'disetujui',
+            'approved_by' => $pimpinanPegawai ? $pimpinanPegawai->id : null,
+        ]);
+
+        return back()->with('notification', [
             'type' => 'success',
-            'title' => 'Dihapus!',
-            'message' => 'Surat tugas telah berhasil dihapus.'
+            'title' => 'Disetujui!',
+            'message' => 'Surat tugas telah disetujui.',
+        ]);
+    }
+
+    /**
+     * Pimpinan: tolak surat tugas (diproses > ditolak).
+     */
+    public function tolak(Request $request, Surat $surat_tugas)
+    {
+        try {
+            SuratStatusTransition::assertValid($surat_tugas->status, 'ditolak');
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('notification', ['type' => 'error', 'title' => 'Gagal', 'message' => $e->getMessage()]);
+        }
+
+        $request->validate([
+            'ditolak_alasan' => 'required|string|max:255',
+        ]);
+
+        $surat_tugas->update([
+            'status' => 'ditolak',
+            'ditolak_alasan' => $request->input('ditolak_alasan'),
+        ]);
+
+        return back()->with('notification', [
+            'type' => 'success',
+            'title' => 'Ditolak!',
+            'message' => 'Surat tugas telah ditolak.',
         ]);
     }
 }

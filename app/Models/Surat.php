@@ -19,23 +19,17 @@ class Surat extends Model
      */
     protected $fillable = [
         // Common fields
-        'user_id',
+        'pegawai_id',
+        'approved_by',   // pimpinan yang menyetujui/menolak (nullable)
         'nomor_surat',
         'jenis_surat',
         'tanggal_surat',
         'perihal',
 
-        // Manual input pegawai & kepala pegawai
-        'nama_lengkap_pegawai',
-        'nip_pegawai',
-        'pangkat_golongan_pegawai',
-        'jabatan_pegawai',
-        'bidang_seksi_pegawai',
-        'status_pegawai',
-
-        'nama_lengkap_kepala_pegawai',
-        'nip_kepala_pegawai',
-        'jabatan_kepala_pegawai',
+        // Status
+        'status',
+        'keterangan',
+        'ditolak_alasan', // alasan penolakan oleh pimpinan
 
         // Cuti-specific fields
         'jenis_cuti',
@@ -65,9 +59,18 @@ class Surat extends Model
         'tanggal_selesai_tugas' => 'date',
     ];
 
-    public function user(): BelongsTo
+    public function pegawai(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Pegawai::class, 'pegawai_id', 'id');
+    }
+
+    /**
+     * Pimpinan yang menyetujui atau menolak surat ini.
+     * Null jika surat belum diproses oleh pimpinan.
+     */
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(Pegawai::class, 'approved_by', 'id');
     }
 
     /**

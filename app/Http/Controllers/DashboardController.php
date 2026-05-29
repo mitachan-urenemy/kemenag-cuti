@@ -2,11 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pegawai;
 use App\Models\Surat;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -17,11 +13,18 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $suratCutiCount = Surat::where('jenis_surat', 'cuti')->count();
-        $suratTugasCount = Surat::where('jenis_surat', 'tugas')->count();
-        $totalSuratCount = Surat::count();
+        $user = auth()->user();
+        $query = Surat::query();
 
-        $recentActivities = Surat::latest()
+        if ($user->role === 'pegawai') {
+            $query->where('pegawai_id', $user->pegawai?->id);
+        }
+
+        $suratCutiCount = (clone $query)->where('jenis_surat', 'cuti')->count();
+        $suratTugasCount = (clone $query)->where('jenis_surat', 'tugas')->count();
+        $totalSuratCount = $query->count();
+
+        $recentActivities = $query->latest()
             ->take(5)
             ->get();
 

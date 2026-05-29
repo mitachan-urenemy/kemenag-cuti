@@ -14,46 +14,45 @@ class RiwayatSuratController extends Controller
      */
     public function index(Request $request)
     {
-        // Data untuk filter jenis cuti
         $jenisCutiOptions = ['tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar'];
-
-        // Jika request adalah AJAX (untuk DataTable)
         if ($request->wantsJson()) {
-            $query = Surat::with('user');
+            $user = auth()->user();
+            $query = Surat::with('pegawai', 'approvedBy');
 
-            // Search - cari di nomor surat, perihal, atau nama pegawai
+            if ($user->role === 'pegawai') {
+                $query->where('pegawai_id', $user->pegawai?->id);
+            }
+
             if ($search = $request->input('search')) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nomor_surat', 'like', "%{$search}%")
                         ->orWhere('perihal', 'like', "%{$search}%")
-                        ->orWhere('nama_lengkap_pegawai', 'like', "%{$search}%")
-                        ->orWhere('nip_pegawai', 'like', "%{$search}%");
+                        ->orWhereHas('pegawai', function ($q2) use ($search) {
+                            $q2->where('nama_lengkap', 'like', "%{$search}%")
+                                ->orWhere('nip', 'like', "%{$search}%");
+                        });
                 });
             }
 
-            // Filter by jenis_surat (cuti/tugas)
             if ($jenisSurat = $request->input('jenis_surat')) {
                 if (in_array($jenisSurat, ['cuti', 'tugas'])) {
                     $query->where('jenis_surat', $jenisSurat);
                 }
             }
-
-            // Filter by jenis_cuti (hanya berlaku jika jenis_surat adalah 'cuti')
             if ($jenisCuti = $request->input('jenis_cuti')) {
                 if (in_array($jenisCuti, $jenisCutiOptions)) {
                     $query->where('jenis_surat', 'cuti')
-                          ->where('jenis_cuti', $jenisCuti);
+                        ->where('jenis_cuti', $jenisCuti);
                 }
             }
-
-            // Filter by status_pegawai (PNS/PPPK) - Menggunakan kolom snapshot di tabel surat
             if ($statusPegawai = $request->input('status_pegawai')) {
                 if (in_array($statusPegawai, ['PNS', 'PPPK'])) {
-                    $query->where('status_pegawai', $statusPegawai);
+                    $query->whereHas('pegawai', function ($q2) use ($statusPegawai) {
+                        $q2->where('status_kepegawaian', $statusPegawai);
+                    });
                 }
             }
 
-            // Sorting
             $allowedSortColumns = ['nomor_surat', 'jenis_surat', 'tanggal_surat', 'created_at'];
             $sort = $request->input('sort', 'tanggal_surat');
             $direction = $request->input('dir', 'desc');
@@ -67,14 +66,12 @@ class RiwayatSuratController extends Controller
                 $query->orderBy('tanggal_surat', 'desc')->orderBy('created_at', 'desc');
             }
 
-            // Pagination
             $limit = $request->input('limit', 10);
             $surats = $query->paginate($limit);
 
-            // Parse data to add custom attributes
             $surats->getCollection()->transform(function ($surat) {
-                $surat->pegawai_nama = $surat->nama_lengkap_pegawai ?? '-';
-                $surat->created_by_name = $surat->user->username ?? 'System';
+                $surat->pegawai_nama = $surat->pegawai->nama_lengkap ?? '-';
+                $surat->created_by_name = $surat->pegawai->user->username ?? 'System';
                 return $surat;
             });
 
@@ -84,7 +81,6 @@ class RiwayatSuratController extends Controller
             ]);
         }
 
-        // Jika bukan AJAX, tampilkan view
         return view('riwayat-surat.index', compact('jenisCutiOptions'));
     }
 
@@ -101,8 +97,8 @@ class RiwayatSuratController extends Controller
             'total_tugas' => Surat::where('jenis_surat', 'tugas')->count(),
             'surat_tahun_ini' => Surat::whereYear('tanggal_surat', $currentYear)->count(),
             'surat_bulan_ini' => Surat::whereYear('tanggal_surat', $currentYear)
-                                      ->whereMonth('tanggal_surat', date('m'))
-                                      ->count(),
+                ->whereMonth('tanggal_surat', date('m'))
+                ->count(),
         ];
 
         return response()->json($stats);

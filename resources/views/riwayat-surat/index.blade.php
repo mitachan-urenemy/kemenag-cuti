@@ -1,14 +1,12 @@
 <x-app-layout>
     <div class="mx-auto">
-        <x-content-card
-            title="Riwayat Surat"
-            subtitle="Daftar semua surat yang telah dibuat dalam sistem."
-            :padding="false"
-            >
+        <x-content-card title="Riwayat Surat" subtitle="Daftar semua surat yang telah dibuat dalam sistem."
+            :padding="false">
             <x-slot name="action">
                 <x-modal-surat>
                     <x-slot name="trigger">
-                        <span class="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all cursor-pointer flex items-center gap-2">
+                        <span
+                            class="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all cursor-pointer flex items-center gap-2">
                             <x-lucide-plus class="w-5 h-5" />
                             Buat Surat
                         </span>
@@ -20,16 +18,13 @@
                 <x-slot name="filters">
                     <!-- Filter Jenis Surat -->
                     <div>
-                        <label for="filter_jenis_surat" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        <label for="filter_jenis_surat"
+                            class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                             <x-lucide-tag class="w-4 h-4 inline mr-1" />
                             Jenis Surat
                         </label>
-                        <select
-                            id="filter_jenis_surat"
-                            x-model="filters.jenis_surat"
-                            @change="fetchData()"
-                            class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm transition-colors duration-200"
-                        >
+                        <select id="filter_jenis_surat" x-model="filters.jenis_surat" @change="fetchData()"
+                            class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm transition-colors duration-200">
                             <option value="all">Semua Jenis Surat</option>
                             <option value="cuti">Surat Cuti</option>
                             <option value="tugas">Surat Tugas</option>
@@ -38,17 +33,14 @@
 
                     <!-- Filter Jenis Cuti -->
                     <div>
-                        <label for="filter_jenis_cuti" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        <label for="filter_jenis_cuti"
+                            class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                             <x-lucide-calendar class="w-4 h-4 inline mr-1" />
                             Jenis Cuti
                         </label>
-                        <select
-                            id="filter_jenis_cuti"
-                            x-model="filters.jenis_cuti"
-                            @change="fetchData()"
+                        <select id="filter_jenis_cuti" x-model="filters.jenis_cuti" @change="fetchData()"
                             :disabled="isJenisCutiDisabled"
-                            class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm transition-colors duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        >
+                            class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm transition-colors duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed">
                             <option value="all">Semua Jenis Cuti</option>
                             <option value="tahunan">Cuti Tahunan</option>
                             <option value="sakit">Cuti Sakit</option>
@@ -60,16 +52,13 @@
 
                     <!-- Filter Status Pegawai -->
                     <div>
-                        <label for="filter_status_pegawai" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        <label for="filter_status_pegawai"
+                            class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                             <x-lucide-users class="w-4 h-4 inline mr-1" />
                             Status Pegawai
                         </label>
-                        <select
-                            id="filter_status_pegawai"
-                            x-model="filters.status_pegawai"
-                            @change="fetchData()"
-                            class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm transition-colors duration-200"
-                        >
+                        <select id="filter_status_pegawai" x-model="filters.status_pegawai" @change="fetchData()"
+                            class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm transition-colors duration-200">
                             <option value="all">Semua Status</option>
                             <option value="PNS">PNS</option>
                             <option value="PPPK">PPPK</option>
@@ -78,11 +67,9 @@
 
                     <!-- Reset Filter Button -->
                     <div class="flex items-end">
-                        <button
-                            type="button"
+                        <button type="button"
                             @click="clearFilters(); filters.jenis_surat = 'all'; filters.jenis_cuti = 'all'; filters.status_pegawai = 'all';"
-                            class="inline-flex px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                        >
+                            class="inline-flex px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
                             <x-lucide-rotate-ccw class="w-4 h-4" />
                             Reset Filter
                         </button>
@@ -90,13 +77,15 @@
                 </x-slot>
 
                 <x-slot name="thead">
-                    <th @click="sortBy('nomor_surat')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors">
+                    <th @click="sortBy('nomor_surat')"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors">
                         <div class="flex items-center gap-2">
                             Nomor Surat
                             <x-lucide-arrow-up-down class="w-4 h-4 text-gray-400" />
                         </div>
                     </th>
-                    <th @click="sortBy('jenis_surat')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors">
+                    <th @click="sortBy('jenis_surat')"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors">
                         <div class="flex items-center gap-2">
                             Jenis Surat
                             <x-lucide-arrow-up-down class="w-4 h-4 text-gray-400" />
@@ -105,14 +94,19 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Pegawai
                     </th>
-                    <th @click="sortBy('tanggal_surat')" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors">
+                    <th @click="sortBy('tanggal_surat')"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors">
                         <div class="flex items-center gap-2">
                             Tanggal Surat
                             <x-lucide-arrow-up-down class="w-4 h-4 text-gray-400" />
                         </div>
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Operator
+                    <th @click="sortBy('status')"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center gap-2">
+                            Status
+                            <x-lucide-arrow-up-down class="w-4 h-4 text-gray-400" />
+                        </div>
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Perihal
@@ -123,11 +117,13 @@
                 </x-slot>
 
                 <x-slot name="tbody">
-                    <tr class="hover:bg-gray-50/80 transition-colors duration-150 group border-b border-gray-100 last:border-0">
+                    <tr
+                        class="hover:bg-gray-50/80 transition-colors duration-150 group border-b border-gray-100 last:border-0">
                         <!-- Nomor Surat -->
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex flex-col items-start gap-1">
-                                <span class="font-mono text-sm font-semibold text-indigo-600 tracking-tight" x-text="item.nomor_surat"></span>
+                                <span class="font-mono text-sm font-semibold text-indigo-600 tracking-tight"
+                                    x-text="item.nomor_surat"></span>
 
                                 <!-- Sub-badge for Jenis Cuti -->
                                 <template x-if="item.jenis_surat === 'cuti' && item.jenis_cuti">
@@ -139,9 +135,7 @@
                                             'bg-pink-50 text-pink-700 border-pink-100 ring-pink-600/20': item.jenis_cuti === 'melahirkan',
                                             'bg-orange-50 text-orange-700 border-orange-100 ring-orange-600/20': item.jenis_cuti === 'alasan_penting',
                                             'bg-purple-50 text-purple-700 border-purple-100 ring-purple-600/20': item.jenis_cuti === 'besar',
-                                        }"
-                                        x-text="item.jenis_cuti.replace('_', ' ')"
-                                    ></span>
+                                        }" x-text="item.jenis_cuti.replace('_', ' ')"></span>
                                 </template>
                             </div>
                         </td>
@@ -176,46 +170,69 @@
                             </div>
                         </td>
 
-                        <!-- Operator -->
+                        <!-- Status -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800" x-text="item.created_by_name"></span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ring-1 ring-inset capitalize"
+                                :class="{
+                                    'bg-gray-50 text-gray-700 border-gray-200 ring-gray-500/20': item.status === 'draft',
+                                    'bg-blue-50 text-blue-700 border-blue-200 ring-blue-500/20': item.status === 'diajukan',
+                                    'bg-amber-50 text-amber-700 border-amber-200 ring-amber-500/20': item.status === 'diproses',
+                                    'bg-green-50 text-green-700 border-green-200 ring-green-500/20': item.status === 'disetujui',
+                                    'bg-red-50 text-red-700 border-red-200 ring-red-500/20': item.status === 'ditolak',
+                                }" x-text="item.status"></span>
                         </td>
 
                         <!-- Perihal -->
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-600 max-w-xs line-clamp-2 leading-relaxed" x-text="item.perihal"></div>
+                            <div class="text-sm text-gray-600 max-w-xs line-clamp-2 leading-relaxed"
+                                x-text="item.perihal"></div>
                         </td>
 
-                        <!-- Aksi -->
+                        {{-- Aksi --}}
                         <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                            <div class="flex items-center justify-end gap-2">
+                            @php $userRole = auth()->user()->role;
+                            $userId = auth()->user()->pegawai?->id; @endphp
+                            <div class="flex items-center justify-end gap-2"
+                                x-data="{ role: '{{ $userRole }}', myPegawaiId: {{ $userId ?? 'null' }} }">
                                 {{-- View --}}
                                 <a :href="item.jenis_surat === 'cuti' ? `/surat-cuti/${item.id}?from=riwayat` : `/surat-tugas/${item.id}?from=riwayat`"
-                                   class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
-                                   title="Lihat Detail">
+                                    class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
+                                    title="Lihat Detail">
                                     <x-lucide-eye class="w-4 h-4" />
                                 </a>
 
-                                {{-- Edit --}}
-                                <a :href="item.jenis_surat === 'cuti' ? `/surat-cuti/${item.id}/edit?from=riwayat` : `/surat-tugas/${item.id}/edit?from=riwayat`"
-                                   class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
-                                   title="Edit">
-                                    <x-lucide-pencil class="w-4 h-4" />
-                                </a>
+                                {{-- Edit Surat Cuti: admin atau pegawai pemilik (status draft/diajukan) --}}
+                                <template
+                                    x-if="item.jenis_surat === 'cuti' && (role === 'admin' || (role === 'pegawai' && item.pegawai_id == myPegawaiId)) && ['draft','diajukan'].includes(item.status)">
+                                    <a :href="`/surat-cuti/${item.id}/edit?from=riwayat`"
+                                        class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                                        title="Edit">
+                                        <x-lucide-pencil class="w-4 h-4" />
+                                    </a>
+                                </template>
 
-                                {{-- Delete --}}
-                                <button
-                                    @click="$dispatch('open-confirm-modal', {
-                                        title: 'Hapus Surat?',
-                                        message: 'Apakah Anda yakin ingin menghapus surat ini? Tindakan ini tidak dapat dibatalkan.',
-                                        action: item.jenis_surat === 'cuti' ? `/surat-cuti/${item.id}` : `/surat-tugas/${item.id}`,
-                                        method: 'DELETE'
-                                    })"
-                                    class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-                                    title="Hapus"
-                                >
-                                    <x-lucide-trash-2 class="w-4 h-4" />
-                                </button>
+                                {{-- Edit Surat Tugas: admin saja --}}
+                                <template x-if="item.jenis_surat === 'tugas' && role === 'admin'">
+                                    <a :href="`/surat-tugas/${item.id}/edit?from=riwayat`"
+                                        class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200"
+                                        title="Edit">
+                                        <x-lucide-pencil class="w-4 h-4" />
+                                    </a>
+                                </template>
+
+                                {{-- Delete: admin saja --}}
+                                <template x-if="role === 'admin'">
+                                    <button @click="$dispatch('open-confirm-modal', {
+                                            title: 'Hapus Surat?',
+                                            message: 'Apakah Anda yakin ingin menghapus surat ini? Tindakan ini tidak dapat dibatalkan.',
+                                            action: item.jenis_surat === 'cuti' ? `/surat-cuti/${item.id}` : `/surat-tugas/${item.id}`,
+                                            method: 'DELETE'
+                                        })"
+                                        class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                        title="Hapus">
+                                        <x-lucide-trash-2 class="w-4 h-4" />
+                                    </button>
+                                </template>
                             </div>
                         </td>
                     </tr>

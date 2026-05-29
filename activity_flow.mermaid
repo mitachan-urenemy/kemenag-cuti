@@ -1,29 +1,62 @@
 flowchart TD
-    Start([Mulai]) --> Login{Login?}
-    Login -- Tidak --> Auth[Halaman Login] --> Login
-    Login -- Ya --> Dashboard[Dashboard]
+    %% Global Nodes
+    Start([Mulai]) --> LoginCheck{Sudah Login?}
 
-    Dashboard --> Menu{Pilih Menu}
+    %% Auth Flow
+    LoginCheck -- Tidak --> LoginPage[Halaman Login]
+    LoginPage --> ProcessLogin[Input Username & Password]
+    ProcessLogin --> LoginSuccess{Login Berhasil?}
+    LoginSuccess -- Tidak --> LoginError[Tampilkan Error] --> LoginPage
+    LoginSuccess -- Ya --> Dashboard
+
+    LoginCheck -- Ya --> Dashboard
+
+    %% Main Navigation
+    Dashboard[Dashboard Role-Based] --> Menu{Pilih Menu}
+
+    %% Feature: Surat Cuti
     Menu -->|Surat Cuti| ListCuti[Daftar Surat Cuti]
+
+    %% Alur Pembuatan Surat Cuti
+    ListCuti -->|Pegawai/Admin Buat| CreateCuti[Form Buat Cuti]
+    CreateCuti --> SaveCuti[Simpan Surat]
+    SaveCuti --> StatusDiajukan[Status: Diajukan]
+
+    %% Alur Persetujuan Surat Cuti
+    StatusDiajukan -->|Admin Verifikasi| StatusDiprosesCuti[Status: Diproses]
+    StatusDiprosesCuti -->|Pimpinan Review| ReviewCuti{Setuju / Tolak?}
+    ReviewCuti -- Setuju --> StatusDisetujuiCuti[Status: Disetujui]
+    ReviewCuti -- Tolak --> ModalTolakCuti[Input Alasan Penolakan] --> StatusDitolakCuti[Status: Ditolak]
+
+    %% Feature: Surat Tugas
     Menu -->|Surat Tugas| ListTugas[Daftar Surat Tugas]
-    Menu -->|Riwayat| ListRiwayat[Riwayat Surat]
 
-    ListCuti --> CreateCuti[Klik 'Buat Surat Cuti']
-    ListTugas --> CreateTugas[Klik 'Buat Surat Tugas']
+    %% Alur Pembuatan Surat Tugas
+    ListTugas -->|Admin Buat| CreateTugas[Form Buat Tugas]
+    CreateTugas --> StatusDiprosesTugas[Status: Diproses]
 
-    CreateCuti --> FormCuti[Isi Form: Snapshot Data Pegawai & Penandatangan + Detail Cuti]
-    CreateTugas --> FormTugas[Isi Form: Snapshot Data Pegawai & Penandatangan + Detail Tugas]
+    %% Alur Persetujuan Surat Tugas
+    StatusDiprosesTugas -->|Pimpinan Review| ReviewTugas{Setuju / Tolak?}
+    ReviewTugas -- Setuju --> StatusDisetujuiTugas[Status: Disetujui]
+    ReviewTugas -- Tolak --> ModalTolakTugas[Input Alasan Penolakan] --> StatusDitolakTugas[Status: Ditolak]
 
-    FormCuti --> Submit[Submit / Simpan]
-    FormTugas --> Submit
+    %% Aksi Detail, Edit & Cetak
+    ListCuti & ListTugas -->|Aksi Tabel| TableActions{Pilih Aksi}
+    TableActions -->|Edit| EditSurat[Form Edit]
+    TableActions -->|Lihat Detail| ShowSurat[Halaman Detail]
+    TableActions -->|Hapus| DeleteSurat[Hapus Surat]
 
-    Submit --> Validate{Validasi?}
-    Validate -- Tidak --> ShowError[Tampilkan Error Validasi] --> FormCuti
-    Validate -- Ya --> SaveDB[Simpan ke database tabel 'surats']
+    %% Aturan Cetak
+    ShowSurat & TableActions --> PrintCheck{Boleh Cetak?}
+    PrintCheck -- "Pegawai (hanya Disetujui) / Admin (Diproses & Disetujui)" --> PrintAction[Tombol Cetak]
+    PrintCheck -- Tidak Boleh --> HidePrint[Tombol Disembunyikan]
 
-    SaveDB --> ShowDetail[Halaman Detail Surat]
+    PrintAction --> PrintSystem[Sistem Generate Template -> window.print]
+    PrintSystem --> Done([Selesai])
 
-    ShowDetail --> Action{Aksi?}
-    Action -->|Edit| EditForm[Edit Data - Snapshot Baru] --> Submit
-    Action -->|Print| Print[Cetak via Hidden Iframe] --> Done([Selesai])
-    Action -->|Kembali| ListRiwayat
+    %% Miscellaneous
+    Menu -->|Riwayat Surat| ListRiwayat[Tabel Riwayat Filtered by Role]
+    Menu -->|Data Pegawai| MasterPegawai[Manajemen Data Pegawai]
+    Menu -->|Profile| UserProfile[Edit Profile]
+
+    ListRiwayat & MasterPegawai & UserProfile --> Dashboard

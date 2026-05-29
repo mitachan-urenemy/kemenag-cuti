@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Tugas - {{ $nomor_surat }}</title>
+    <title>Surat Tugas - {{ $surat->nomor_surat }}</title>
     <style>
         @page {
             size: A4;
@@ -35,6 +36,7 @@
                 margin: 0;
                 background-color: white;
             }
+
             .container {
                 width: 100%;
                 min-height: auto;
@@ -65,7 +67,9 @@
             text-align: center;
         }
 
-        .kop-text h2, .kop-text h3, .kop-text p {
+        .kop-text h2,
+        .kop-text h3,
+        .kop-text p {
             margin: 0;
             line-height: 1.2;
         }
@@ -154,12 +158,14 @@
             body {
                 padding: 0;
             }
+
             .container {
                 max-width: 100%;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Kop Surat -->
@@ -169,7 +175,8 @@
                 <h2>KEMENTERIAN AGAMA REPUBLIK INDONESIA</h2>
                 <h3>KANTOR KEMENTERIAN AGAMA KABUPATEN BENER MERIAH</h3>
                 <p>Jln.Bandara Rembele – Pante Raya Redelong 24581</p>
-                <p>Telepon (0643) 8001010 E-Mail <a href="mailto:kankemenag.bener.meriah@gmail.com" style="color: blue; text-decoration: underline;">kankemenag.bener.meriah@gmail.com</a></p>
+                <p>Telepon (0643) 8001010 E-Mail <a href="mailto:kankemenag.bener.meriah@gmail.com"
+                        style="color: blue; text-decoration: underline;">kankemenag.bener.meriah@gmail.com</a></p>
             </div>
         </div>
 
@@ -185,11 +192,13 @@
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr>
                                 <td style="width: 20px; vertical-align: top;">1.</td>
-                                <td style="text-align: justify;">Bahwa dalam rangka {{ $surat->tujuan_tugas ?? '...' }}</td>
+                                <td style="text-align: justify;">Bahwa dalam rangka {{ $surat->tujuan_tugas ?? '...' }}
+                                </td>
                             </tr>
                             <tr>
                                 <td style="width: 20px; vertical-align: top;">2.</td>
-                                <td style="text-align: justify;">Bahwa nama yang tersebut dibawah ini dipandang relevan untuk mengikuti kegiatan dimaksud.</td>
+                                <td style="text-align: justify;">Bahwa nama yang tersebut dibawah ini dipandang relevan
+                                    untuk mengikuti kegiatan dimaksud.</td>
                             </tr>
                         </table>
                     </td>
@@ -204,11 +213,14 @@
                         <table style="width: 100%; border-collapse: collapse;">
                             <tr>
                                 <td style="width: 20px; vertical-align: top;">1.</td>
-                                <td style="text-align: justify;">Peraturan Menteri Agama No. 6 Tahun 2022 Tentang Perubahan Atas Peraturan Menteri Agama Nomor 19 Tahun 2019 tentang Organisasi dan Tata Kerja Instansi Vertikal Kementerian Agama;</td>
+                                <td style="text-align: justify;">Peraturan Menteri Agama No. 6 Tahun 2022 Tentang
+                                    Perubahan Atas Peraturan Menteri Agama Nomor 19 Tahun 2019 tentang Organisasi dan
+                                    Tata Kerja Instansi Vertikal Kementerian Agama;</td>
                             </tr>
                             <tr>
                                 <td style="width: 20px; vertical-align: top;">2.</td>
-                                <td style="text-align: justify;">Surat Keputusan Kepala Kantor Kementerian Agama Kabupaten Bener Meriah, {{ $surat->dasar_hukum }}</td>
+                                <td style="text-align: justify;">Surat Keputusan Kepala Kantor Kementerian Agama
+                                    Kabupaten Bener Meriah, {{ $surat->dasar_hukum }}</td>
                             </tr>
                         </table>
                     </td>
@@ -225,17 +237,17 @@
                             <tr>
                                 <td style="width: 100px;">Nama</td>
                                 <td style="width: 20px;">:</td>
-                                <td style="font-weight: bold;">{{ $surat->nama_lengkap_pegawai }}</td>
+                                <td style="font-weight: bold;">{{ $pegawai->nama_lengkap ?? '' }}</td>
                             </tr>
                             <tr>
                                 <td>NIP</td>
                                 <td>:</td>
-                                <td>{{ $surat->nip_pegawai }}</td>
+                                <td>{{ $pegawai->nip ?? '' }}</td>
                             </tr>
                             <tr>
                                 <td>Jabatan</td>
                                 <td>:</td>
-                                <td>{{ $surat->jabatan_pegawai }}</td>
+                                <td>{{ $pegawai->jabatan ?? '' }}</td>
                             </tr>
                         </table>
                     </td>
@@ -247,7 +259,11 @@
                     <td style="width: 100px; vertical-align: top;">Untuk</td>
                     <td style="vertical-align: top; display: flex;">
                         <div style="margin-right: 5px;">:</div>
-                        <div style="text-align: justify;">{{ $surat->tujuan_tugas }} yang akan dilaksanakan pada tanggal {{ $surat->tanggal_mulai_tugas->translatedFormat('d F Y') }} s.d {{ $surat->tanggal_selesai_tugas->translatedFormat('d F Y') }} bertempat di {{ $surat->lokasi_tugas }}.</div>
+                        <div style="text-align: justify;">{{ $surat->tujuan_tugas }} yang akan dilaksanakan pada tanggal
+                            {{ $surat->tanggal_mulai_tugas->translatedFormat('d F Y') }} s.d
+                            {{ $surat->tanggal_selesai_tugas->translatedFormat('d F Y') }} bertempat di
+                            {{ $surat->lokasi_tugas }}.
+                        </div>
                     </td>
                 </tr>
             </table>
@@ -258,21 +274,28 @@
 
             <div class="ttd">
                 <div class="ttd-content">
-                    <div style="margin-bottom: 5px; text-align: left;">Redelong, {{ $surat->tanggal_surat->translatedFormat('d F Y') }}</div>
-                    <div class="ttd-jabatan" style="text-align: left;">{{ $surat->jabatan_kepala_pegawai ?? 'Kepala' }}</div>
-                    <div class="ttd-nama" style="text-align: left; margin-top: 60px;">{{ $surat->nama_lengkap_kepala_pegawai }}</div>
-                    <div class="ttd-nip" style="text-align: left;">NIP. {{ $surat->nip_kepala_pegawai }}</div>
+                    <div style="margin-bottom: 5px; text-align: left;">Redelong,
+                        {{ $surat->tanggal_surat->translatedFormat('d F Y') }}
+                    </div>
+                    <div class="ttd-jabatan" style="text-align: left;">{{ $pimpinan->jabatan ?? 'Kepala' }}</div>
+                    <div class="ttd-nama" style="text-align: left; margin-top: 60px;">
+                        {{ $pimpinan->nama_lengkap ?? '...' }}
+                    </div>
+                    <div class="ttd-nip" style="text-align: left;">NIP. {{ $pimpinan->nip ?? '...' }}</div>
                 </div>
             </div>
         </div>
     </div>
-    @if($trigger_print ?? false)
-    <script>
-        window.onload = function() {
-            window.focus();
-            window.print();
-        }
-    </script>
+    @if(request()->has('print'))
+        <script>
+            window.addEventListener('load', function () {
+                setTimeout(function () {
+                    window.focus();
+                    window.print();
+                }, 300);
+            });
+        </script>
     @endif
 </body>
+
 </html>

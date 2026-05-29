@@ -22,98 +22,54 @@
                 </x-slot>
 
                 <div class="space-y-6">
-                    <!-- Section: Informasi Pegawai & Surat -->
-                    <div class="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
-                        <h3 class="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
-                            <x-lucide-user class="w-4 h-4 text-gray-500" />
-                            Informasi Pegawai
+                    {{-- ── Section: Identitas Pegawai (readonly) ── --}}
+                    <div class="bg-blue-50/60 p-4 rounded-lg border border-blue-100">
+                        <h3 class="text-sm font-medium text-blue-900 mb-4 flex items-center gap-2">
+                            <x-lucide-user class="w-4 h-4 text-blue-600" />
+                            Identitas Pegawai
                         </h3>
-                         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                            {{-- Pegawai --}}
-                            <x-forms.text
-                                title="Nama Lengkap"
-                                name="nama_lengkap_pegawai"
-                                placeholder="Masukkan Nama Lengkap"
-                                :value="$surat_tugas->nama_lengkap_pegawai ?? old('nama_lengkap_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Nomor Induk Pegawai (NIP)"
-                                name="nip_pegawai"
-                                placeholder="Masukkan Nomor Induk Pegawai"
-                                :value="$surat_tugas->nip_pegawai ?? old('nip_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Pangkat/Golongan"
-                                name="pangkat_golongan_pegawai"
-                                placeholder="Masukkan Pangkat Golongan"
-                                :value="$surat_tugas->pangkat_golongan_pegawai ?? old('pangkat_golongan_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Jabatan"
-                                name="jabatan_pegawai"
-                                placeholder="Masukkan Jabatan"
-                                :value="$surat_tugas->jabatan_pegawai ?? old('jabatan_pegawai')"
-                                required
-                            />
-
-                            <x-forms.text
-                                title="Unit Kerja"
-                                name="bidang_seksi_pegawai"
-                                placeholder="Masukkan Unit Kerja"
-                                :value="$surat_tugas->bidang_seksi_pegawai ?? old('bidang_seksi_pegawai')"
-                                required
-                            />
-
-                            <x-forms.select
-                                title="Status Pegawai"
-                                name="status_pegawai"
-                                :options="['PNS' => 'PNS', 'PPPK' => 'PPPK']"
-                                :value="$surat_tugas->status_pegawai ?? old('status_pegawai')"
-                                required
-                            />
-
-                            <div class="col-span-3 flex items-center gap-4 py-2">
-                                <div class="h-px flex-1 bg-gray-200"></div>
-                                <span class="text-[12px] font-bold text-gray-400 uppercase tracking-widest">Informasi Penandatangan</span>
-                                <div class="h-px flex-1 bg-gray-200"></div>
+                        @php $pegawai = $surat_tugas->pegawai; @endphp
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3 text-sm text-gray-700">
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Nama Lengkap</span>
+                                <span class="font-semibold">{{ $pegawai?->nama_lengkap ?? '-' }}</span>
                             </div>
-
-                             {{-- Penandatangan --}}
-                            <div class="col-span-3 grid grid-cols-1 gap-6 md:grid-cols-3">
-                                <x-forms.text
-                                    title="Nama Lengkap Kepala Unit"
-                                    name="nama_lengkap_kepala_pegawai"
-                                    placeholder="Masukkan Nama Lengkap Kepala Unit"
-                                    :value="$surat_tugas->nama_lengkap_kepala_pegawai ?? old('nama_lengkap_kepala_pegawai')"
-                                    required
-                                />
-
-                                <x-forms.text
-                                    title="Nomor Induk Pegawai (NIP)"
-                                    name="nip_kepala_pegawai"
-                                    placeholder="Masukkan Nomor Induk Pegawai Kepala Unit"
-                                    :value="$surat_tugas->nip_kepala_pegawai ?? old('nip_kepala_pegawai')"
-                                    required
-                                />
-
-                                <x-forms.text
-                                    title="Jabatan Kepala Unit"
-                                    name="jabatan_kepala_pegawai"
-                                    placeholder="Masukkan Jabatan Kepala Unit"
-                                    :value="$surat_tugas->jabatan_kepala_pegawai ?? old('jabatan_kepala_pegawai')"
-                                    required
-                                />
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">NIP</span>
+                                <span class="font-semibold font-mono">{{ $pegawai?->nip ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Status Kepegawaian</span>
+                                <span class="font-semibold">{{ $pegawai?->status_kepegawaian ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Pangkat / Golongan</span>
+                                <span class="font-semibold">{{ $pegawai?->pangkat_golongan ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Jabatan</span>
+                                <span class="font-semibold">{{ $pegawai?->jabatan ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs text-gray-500 uppercase tracking-wide mb-0.5">Unit Kerja</span>
+                                <span class="font-semibold">{{ $pegawai?->unit_kerja ?? '-' }}</span>
                             </div>
                         </div>
+
+                        @php $pimpinan = $surat_tugas->approvedBy ?? \App\Models\Pegawai::where('is_atasan', true)->first(); @endphp
+                        @if($pimpinan)
+                        <div class="mt-4 pt-4 border-t border-blue-100">
+                            <span class="text-xs text-blue-600 font-semibold uppercase tracking-wide">Kepala Unit (Penandatangan)</span>
+                            <div class="mt-2 text-sm text-gray-700">
+                                <span class="font-semibold">{{ $pimpinan->nama_lengkap }}</span>
+                                <span class="mx-2 text-gray-400">·</span>
+                                <span class="text-gray-500">{{ $pimpinan->jabatan ?? '-' }}</span>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
-                    <!-- Section: Detail Surat & Tugas -->
+                    {{-- ── Section: Detail Surat & Tugas ── --}}
                     <div class="bg-gray-50/50 p-4 rounded-lg border border-gray-100">
                         <h3 class="text-sm font-medium text-gray-900 mb-4 flex items-center gap-2">
                             <x-lucide-briefcase class="w-4 h-4 text-gray-500" />
@@ -126,7 +82,7 @@
                                     title="Nomor Surat"
                                     name="nomor_surat"
                                     placeholder="Masukkan Nomor Surat"
-                                    :value="$surat_tugas->nomor_surat ?? old('nomor_surat')"
+                                    :value="old('nomor_surat', $surat_tugas->nomor_surat)"
                                     required
                                 />
                             </div>
@@ -134,7 +90,7 @@
                                 <x-forms.date
                                     title="Tanggal Surat"
                                     name="tanggal_surat"
-                                    :value="$surat_tugas->tanggal_surat->format('Y-m-d') ?? old('tanggal_surat')"
+                                    :value="old('tanggal_surat', $surat_tugas->tanggal_surat->format('Y-m-d'))"
                                     required
                                 />
                             </div>
@@ -145,14 +101,25 @@
                                 <div class="h-px flex-1 bg-gray-200"></div>
                             </div>
 
+                            {{-- Perihal --}}
+                            <div class="col-span-1 md:col-span-3">
+                                <x-forms.text
+                                    title="Perihal"
+                                    name="perihal"
+                                    placeholder="Contoh: Penyuluhan Moderasi Beragama"
+                                    :value="old('perihal', $surat_tugas->perihal)"
+                                    required
+                                />
+                            </div>
+
                             {{-- Dasar Hukum --}}
                             <div class="col-span-1 md:col-span-3">
                                 <x-forms.textarea
                                     title="Dasar Hukum"
                                     name="dasar_hukum"
-                                    placeholder="Contoh: Peraturan Menteri Agama No. 16 Tahun 2005"
+                                    placeholder="Contoh: DIPA Kementerian Agama Kab. Bener Meriah Tahun 2026"
                                     rows="3"
-                                    :value="$surat_tugas->dasar_hukum ?? old('dasar_hukum')"
+                                    :value="old('dasar_hukum', $surat_tugas->dasar_hukum)"
                                     required
                                 />
                             </div>
@@ -164,7 +131,7 @@
                                     name="tujuan_tugas"
                                     placeholder="Contoh: Mengikuti Rapat Koordinasi"
                                     rows="3"
-                                    :value="$surat_tugas->tujuan_tugas ?? old('tujuan_tugas')"
+                                    :value="old('tujuan_tugas', $surat_tugas->tujuan_tugas)"
                                     required
                                 />
                             </div>
@@ -174,8 +141,8 @@
                                 <x-forms.text
                                     title="Lokasi Tugas"
                                     name="lokasi_tugas"
-                                    placeholder="Contoh: Jakarta"
-                                    :value="$surat_tugas->lokasi_tugas ?? old('lokasi_tugas')"
+                                    placeholder="Contoh: Banda Aceh"
+                                    :value="old('lokasi_tugas', $surat_tugas->lokasi_tugas)"
                                     required
                                 />
                             </div>
@@ -185,7 +152,7 @@
                                 <x-forms.date
                                     title="Tanggal Mulai Tugas"
                                     name="tanggal_mulai_tugas"
-                                    :value="$surat_tugas->tanggal_mulai_tugas->format('Y-m-d') ?? old('tanggal_mulai_tugas')"
+                                    :value="old('tanggal_mulai_tugas', $surat_tugas->tanggal_mulai_tugas->format('Y-m-d'))"
                                     required
                                 />
                             </div>
@@ -193,7 +160,7 @@
                                 <x-forms.date
                                     title="Tanggal Selesai Tugas"
                                     name="tanggal_selesai_tugas"
-                                    :value="$surat_tugas->tanggal_selesai_tugas->format('Y-m-d') ?? old('tanggal_selesai_tugas')"
+                                    :value="old('tanggal_selesai_tugas', $surat_tugas->tanggal_selesai_tugas->format('Y-m-d'))"
                                     required
                                 />
                             </div>

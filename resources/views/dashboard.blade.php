@@ -8,7 +8,8 @@
         {{-- Stats & Quick Actions Grid --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Surat Tugas Card -->
-            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div
+                class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start mb-6">
                     <div class="p-3 bg-blue-600 rounded-xl">
                         <x-lucide-briefcase class="w-6 h-6 text-white" />
@@ -17,16 +18,20 @@
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Surat Tugas</h3>
                 <p class="text-sm text-gray-500 mb-6">Buat surat perintah tugas untuk pegawai</p>
-                <div class="flex items-center">
-                    <a href="{{ route('surat-tugas.create') }}" class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
-                        <x-lucide-plus class="w-5 h-5" />
-                        Buat Surat
-                    </a>
-                </div>
+                @if(auth()->user()->role === 'admin')
+                    <div class="flex items-center">
+                        <a href="{{ route('surat-tugas.create') }}"
+                            class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
+                            <x-lucide-plus class="w-5 h-5" />
+                            Buat Surat
+                        </a>
+                    </div>
+                @endif
             </div>
 
             <!-- Surat Cuti Card -->
-            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div
+                class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start mb-6">
                     <div class="p-3 bg-green-600 rounded-xl">
                         <x-lucide-file-text class="w-6 h-6 text-white" />
@@ -35,16 +40,20 @@
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Surat Cuti</h3>
                 <p class="text-sm text-gray-500 mb-6">Buat surat permohonan cuti pegawai</p>
-                <div class="flex items-center">
-                    <a href="{{ route('surat-cuti.create') }}" class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
-                        <x-lucide-plus class="w-5 h-5" />
-                        Buat Surat
-                    </a>
-                </div>
+                @if(auth()->user()->role !== 'pimpinan')
+                    <div class="flex items-center">
+                        <a href="{{ route('surat-cuti.create') }}"
+                            class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
+                            <x-lucide-plus class="w-5 h-5" />
+                            Buat Surat
+                        </a>
+                    </div>
+                @endif
             </div>
 
             <!-- Riwayat Surat Card -->
-            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div
+                class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-start mb-6">
                     <div class="p-3 bg-orange-600 rounded-xl">
                         <x-lucide-history class="w-6 h-6 text-white" />
@@ -54,7 +63,8 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Riwayat Surat</h3>
                 <p class="text-sm text-gray-500 mb-6">Lihat daftar semua surat yang telah dibuat</p>
                 <div class="flex items-center">
-                    <a href="{{ route('riwayat-surat') }}" class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
+                    <a href="{{ route('riwayat-surat') }}"
+                        class="w-full py-3 bg-gray-50 text-gray-700 rounded-xl border border-gray-200 font-semibold hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center gap-2">
                         <x-lucide-history class="w-5 h-5" />
                         Lihat Riwayat
                     </a>
@@ -69,9 +79,11 @@
 
             <div class="space-y-4">
                 @forelse($recentActivities as $activity)
-                    <div class="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                    <div
+                        class="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
                         <div class="flex items-center gap-4">
-                            <div class="p-2 rounded-lg {{ $activity->jenis_surat == 'cuti' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600' }}">
+                            <div
+                                class="p-2 rounded-lg {{ $activity->jenis_surat == 'cuti' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600' }}">
                                 <x-dynamic-component :component="$activity->jenis_surat == 'cuti' ? 'lucide-file-text' : 'lucide-briefcase'" class="w-5 h-5" />
                             </div>
                             <div>
