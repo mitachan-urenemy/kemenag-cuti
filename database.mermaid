@@ -53,16 +53,7 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
-    CUTI_KUOTA {
-        int id PK
-        int pegawai_id FK
-        int tahun
-        enum jenis_cuti
-        int kuota_hari
-        int terpakai
-        timestamp created_at
-        timestamp updated_at
-    }
+
     PASSWORD_RESET_TOKENS {
         string username PK
         string token
@@ -79,4 +70,4 @@ erDiagram
     USERS ||--o| PEGAWAIS : "has"
     PEGAWAIS ||--o{ SURATS : "requests"
     PEGAWAIS ||--o{ SURATS : "approves"
-    PEGAWAIS ||--o{ CUTI_KUOTA : "has quota"
+

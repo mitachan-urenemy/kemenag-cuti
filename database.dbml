@@ -50,7 +50,7 @@ Table surats {
   jenis_surat enum('cuti', 'tugas')
   tanggal_surat date
   perihal string
-  
+
   status enum('draft', 'diajukan', 'diproses', 'disetujui', 'ditolak') [default: 'draft']
   keterangan text [null]
   ditolak_alasan text [null]
@@ -73,21 +73,6 @@ Table surats {
   updated_at timestamp
 }
 
-Table cuti_kuota {
-  id integer [primary key, increment]
-  pegawai_id integer
-  tahun integer
-  jenis_cuti enum('tahunan', 'sakit', 'melahirkan', 'alasan_penting', 'besar')
-  kuota_hari integer [default: 12]
-  terpakai integer [default: 0]
-  created_at timestamp
-  updated_at timestamp
-
-  indexes {
-    (pegawai_id, tahun, jenis_cuti) [unique]
-  }
-}
-
 Table password_reset_tokens {
   username string [primary key]
   token string
@@ -108,5 +93,4 @@ Table sessions {
 Ref: pegawais.user_id > users.id [delete: cascade]
 Ref: surats.pegawai_id > pegawais.id [delete: cascade]
 Ref: surats.approved_by > pegawais.id [delete: set null]
-Ref: cuti_kuota.pegawai_id > pegawais.id [delete: cascade]
 Ref: sessions.user_id > users.id
