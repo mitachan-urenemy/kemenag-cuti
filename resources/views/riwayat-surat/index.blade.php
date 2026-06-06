@@ -2,17 +2,6 @@
     <div class="mx-auto">
         <x-content-card title="Riwayat Surat" subtitle="Daftar semua surat yang telah dibuat dalam sistem."
             :padding="false">
-            <x-slot name="action">
-                <x-modal-surat>
-                    <x-slot name="trigger">
-                        <span
-                            class="px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-all cursor-pointer flex items-center gap-2">
-                            <x-lucide-plus class="w-5 h-5" />
-                            Buat Surat
-                        </span>
-                    </x-slot>
-                </x-modal-surat>
-            </x-slot>
 
             <x-data-table url="{{ route('riwayat-surat') }}" :has-filters="true">
                 <x-slot name="filters">
@@ -172,7 +161,8 @@
 
                         <!-- Status -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ring-1 ring-inset capitalize"
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ring-1 ring-inset capitalize"
                                 :class="{
                                     'bg-gray-50 text-gray-700 border-gray-200 ring-gray-500/20': item.status === 'draft',
                                     'bg-blue-50 text-blue-700 border-blue-200 ring-blue-500/20': item.status === 'diajukan',
@@ -240,4 +230,5 @@
             </x-data-table>
         </x-content-card>
     </div>
+
 </x-app-layout>
